@@ -2,6 +2,7 @@
 
 import { FormEvent, useState, useRef } from "react";
 import { Chart } from "react-google-charts";
+import MyChart from "./chart"
 
 export default function Page() {
     const [activeTab, setActiveTab] = useState("smashday");
@@ -15,8 +16,8 @@ export default function Page() {
     const [spanEMAShort, setSpanEMAShort] = useState(13);
     const [spanEMALong, setSpanEMALong] = useState(26);
 
-    const [resultVisible, setResultVisible] = useState(false);
-    const [chartVisible, setChartVisible] = useState(false);
+    const [resultVisible, setResultVisible] = useState(true);
+    const [chartVisible, setChartVisible] = useState(true);
     const [stockName, setStockName] = useState("");
     const [totalProfit, setTotalProfit] = useState("");
     const [totalGain, setTotalGain] = useState("");
@@ -27,7 +28,9 @@ export default function Page() {
         { startDate: "2019-01-01", endDate: "2024-01-01", outcome: "Gain", amount: "100" },
     ]);
 
-    const [datas, setDatas] = useState([["", 0]]);
+    const [chartEMAShort, setChartEMAShort] = useState(13);
+    const [chartEMALong, setChartEMALong] = useState(26);
+    const [datas, setDatas] = useState([{date: "2024-01-01", open: 0, close: 0, high: 0, low: 0, volume: 0}]);
 
     const resultRef = useRef<HTMLDivElement>(null);
 
@@ -387,27 +390,31 @@ export default function Page() {
                             <div className="w-2/3 pr-4">
                                 {chartVisible && (
                                     <div>
-                                        <h3 className="text-xl font-semibold">チャート</h3>
-                                        <div className="overflow-x-scroll">
-                                            <Chart
-                                                chartType="CandlestickChart"
-                                                height="80vh"
-                                                data={datas}
-                                                options={{
-                                                    legend: "none",
-                                                    candlestick: {
-                                                        hollowIsRising: false,
-                                                        fallingColor: {
-                                                            fill: "#f23645",
-                                                            stroke: "#f23645",
-                                                        },
-                                                        risingColor: {
-                                                            fill: "#089981",
-                                                            stroke: "#089981",
-                                                        },
-                                                    }
-                                                }}
-                                            />
+                                        <div className="flex flex-row">
+                                            <h3 className="text-xl font-semibold">チャート</h3>
+                                            <div className="flex flex-col px-2">
+                                                <h6>短期EMA</h6>
+                                                <input
+                                                    type="number"
+                                                    id="chartEMAShort"
+                                                    value={chartEMAShort}
+                                                    onChange={(e) => setChartEMAShort(Number(e.target.value))}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col px-2">
+                                                <h6>長期EMA</h6>
+                                                <input
+                                                    type="number"
+                                                    id="chartEMALong"
+                                                    value={chartEMALong}
+                                                    onChange={(e) => setChartEMALong(Number(e.target.value))}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="h-[90vh] overflow-x-scroll">
+                                            <MyChart height={parent.innerHeight} width={parent.innerWidth} rawdata={datas} emashort={chartEMAShort} emalong={chartEMALong}/>
                                         </div>
                                     </div>
                                 )}

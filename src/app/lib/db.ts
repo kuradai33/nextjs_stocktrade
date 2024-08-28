@@ -23,16 +23,11 @@ export async function getStockData(param: {symbol: string, start: string, end: s
             close: true,
             high: true,
             low: true,
+            volume: true,
         }
     });
 
-    let prices = rawPrices;
-
-    let datas: (string | number)[][] = [["day", "a", "b", "c", "d"]];
-    for(let price of prices){
-        datas.push([price.date, price.low, price.open, price.close, price.high]);
-    }
-    return datas;
+    return rawPrices;
 }
 
 export async function SimulateSmashday(param: {symbol: string, start: string, end: string, tradeType: "buy" | "sell" | "both", HLBand: number | null, EMA: {short: number, long: number} | null}){

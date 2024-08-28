@@ -13,10 +13,13 @@
     "next": "14.2.6",
     "react": "^18",
     "react-dom": "^18",
+    "react-financial-charts": "^2.0.1",
     "react-google-charts": "^4.0.1",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "@types/d3-format": "^3.0.4",
+    "@types/d3-time-format": "^4.0.3",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
