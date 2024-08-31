@@ -1,5 +1,5 @@
-import { NextRequest } from "next/server"
-import { SimulateSmashday } from "@/app/lib/db"
+import { NextRequest } from "next/server";
+import { SimulateSmashday } from "@/app/lib/db";
 
 export async function POST(request: NextRequest) {
     const body = await request.json();

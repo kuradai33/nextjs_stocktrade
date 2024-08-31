@@ -1,8 +1,8 @@
 "use client";
 
 import { FormEvent, useState, useRef } from "react";
-import { Chart } from "react-google-charts";
-import MyChart from "./chart"
+import ReactECharts from "echarts-for-react";
+import { json } from "stream/consumers";
 
 export default function Page() {
     const [activeTab, setActiveTab] = useState("smashday");
@@ -16,8 +16,8 @@ export default function Page() {
     const [spanEMAShort, setSpanEMAShort] = useState(13);
     const [spanEMALong, setSpanEMALong] = useState(26);
 
-    const [resultVisible, setResultVisible] = useState(true);
-    const [chartVisible, setChartVisible] = useState(true);
+    const [resultVisible, setResultVisible] = useState(false);
+    const [chartVisible, setChartVisible] = useState(false);
     const [stockName, setStockName] = useState("");
     const [totalProfit, setTotalProfit] = useState("");
     const [totalGain, setTotalGain] = useState("");
@@ -28,16 +28,104 @@ export default function Page() {
         { startDate: "2019-01-01", endDate: "2024-01-01", outcome: "Gain", amount: "100" },
     ]);
 
-    const [chartEMAShort, setChartEMAShort] = useState(13);
-    const [chartEMALong, setChartEMALong] = useState(26);
-    const [datas, setDatas] = useState([{date: "2024-01-01", open: 0, close: 0, high: 0, low: 0, volume: 0}]);
+    const [chartData, setChartData] = useState([{date: "", open: 0, close: 0, high: 0, low: 0, emashort: 0, emalong: 0}]);
+    const [chartDate, setChartDate] = useState([""]);
+    const [chartEMAShort, setChartEMAShort] = useState([0]);
+    const [chartEMALong, setChartEMALong] = useState([0]);
+    const [chartEMAShortSpan, setChartEMAShortSpan] = useState(13);
+    const [chartEMALongSpan, setChartEMALongSpan] = useState(26);
 
     const resultRef = useRef<HTMLDivElement>(null);
+
+    let options = {
+        legend: {
+            data: ["日付", "MA5", "MA10", "MA20", "MA30"],
+            inactiveColor: "#777",
+        },
+        tooltip: {
+            trigger: "axis",
+            axisPointer: {
+                animation: false,
+                type: "cross",
+                lineStyle: {
+                    color: "#376df4",
+                    width: 2,
+                    opacity: 1,
+                },
+            },
+        },
+        xAxis: {
+            type: "category",
+            data: chartDate,
+            axisLine: { lineStyle: { color: "#8392A5" } },
+        },
+        yAxis: {
+            scale: true,
+            axisLine: { lineStyle: { color: "#8392A5" } },
+            splitLine: { show: false },
+        },
+        grid: {
+            bottom: 80,
+        },
+        dataZoom: [
+            {
+                textStyle: {
+                    color: "#8392A5",
+                },
+                dataBackground: {
+                    areaStyle: {
+                        color: "#8392A5",
+                    },
+                    lineStyle: {
+                        opacity: 0.8,
+                        color: "#8392A5",
+                    },
+                },
+                brushSelect: true,
+            },
+            {
+                type: "inside",
+            },
+        ],
+        series: [
+            {
+                type: "candlestick",
+                name: "Day",
+                data: chartData,
+                itemStyle: {
+                    color: "#FD1050",
+                    color0: "#0CF49B",
+                    borderColor: "#FD1050",
+                    borderColor0: "#0CF49B",
+                },
+            },
+            // {
+            //     name: "EMA Short",
+            //     type: "line",
+            //     data: chartEMAShort,
+            //     smooth: true,
+            //     showSymbol: false,
+            //     lineStyle: {
+            //         width: 1,
+            //     },
+            // },
+            // {
+            //     name: "EMA Long",
+            //     type: "line",
+            //     data: chartEMALong,
+            //     smooth: true,
+            //     showSymbol: false,
+            //     lineStyle: {
+            //         width: 1,
+            //     },
+            // },
+        ],
+    };
 
     const submitSimulation = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await fetch("http://localhost:3000/api/post", {
+            const response = await fetch("http://192.168.0.105:3000/api/post", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -70,7 +158,7 @@ export default function Page() {
 
     const submitChart = async (start: string, end: string) => {
         try {
-            const response = await fetch("http://localhost:3000/api/chart", {
+            const response = await fetch("http://192.168.0.105:3000/api/chart", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -80,10 +168,15 @@ export default function Page() {
                     symbol: stockSymbol,
                     start: start,
                     end: end,
+                    emashort: chartEMAShortSpan,
+                    emalong: chartEMALongSpan,
                 }),
             });
-            const stockData = (await response.json()).stockData;
-            setDatas(stockData);
+            const jsonData = await response.json();
+            setChartData(jsonData.stockData);
+            setChartDate(jsonData.stockDate);
+            setChartEMAShort(jsonData.stockEMAShort);
+            setChartEMALong(jsonData.stockEMALong);
             setChartVisible(true);
         } catch (err) {
             alert("メッセージの送信が失敗しました");
@@ -397,8 +490,8 @@ export default function Page() {
                                                 <input
                                                     type="number"
                                                     id="chartEMAShort"
-                                                    value={chartEMAShort}
-                                                    onChange={(e) => setChartEMAShort(Number(e.target.value))}
+                                                    value={chartEMAShortSpan}
+                                                    onChange={(e) => setChartEMAShortSpan(Number(e.target.value))}
                                                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                                                 />
                                             </div>
@@ -407,14 +500,14 @@ export default function Page() {
                                                 <input
                                                     type="number"
                                                     id="chartEMALong"
-                                                    value={chartEMALong}
-                                                    onChange={(e) => setChartEMALong(Number(e.target.value))}
+                                                    value={chartEMALongSpan}
+                                                    onChange={(e) => setChartEMALongSpan(Number(e.target.value))}
                                                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                                                 />
                                             </div>
                                         </div>
                                         <div className="h-[90vh] overflow-x-scroll">
-                                            <MyChart height={parent.innerHeight} width={parent.innerWidth} rawdata={datas} emashort={chartEMAShort} emalong={chartEMALong}/>
+                                            <ReactECharts option={options} />
                                         </div>
                                     </div>
                                 )}
