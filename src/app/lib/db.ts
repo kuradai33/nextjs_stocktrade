@@ -1,6 +1,14 @@
 import { deleteAppClientCache } from "next/dist/server/lib/render-server";
 import prisma from "./prisma";
 
+export async function addMessageInForm(message: string){
+    const post = await prisma.form.create({
+        data: {
+            message: message,
+        },
+    })
+}
+
 export async function checkSymbol(symbol: string) {
     // 確認済み
     const result = (await prisma.stocks.count({ where: { code: symbol } })) == 1;
