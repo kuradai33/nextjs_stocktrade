@@ -22,6 +22,7 @@ model Stocks {
 }
 
 model Stockprices {
+  id       Int    @id @default(autoincrement())
   stock_id Int
   date     String
   date_num Int
@@ -31,16 +32,7 @@ model Stockprices {
   low      Float
   volume   Int
 
-  @@id([stock_id, date])
-}
-
-model SignalSmashday {
-  stock_id      Int
-  date          DateTime
-  smashday_buy  Boolean
-  smashday_sell Boolean
-
-  @@id([stock_id, date])
+  @@unique([stock_id, date])
 }
 
 model Form {

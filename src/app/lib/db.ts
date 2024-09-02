@@ -1,4 +1,3 @@
-import { deleteAppClientCache } from "next/dist/server/lib/render-server";
 import prisma from "./prisma";
 
 export async function addMessageInForm(message: string){
@@ -9,11 +8,10 @@ export async function addMessageInForm(message: string){
     })
 }
 
-export async function checkSymbol(symbol: string) {
-    // 確認済み
-    const result = (await prisma.stocks.count({ where: { code: symbol } })) == 1;
-    console.log(`checkSymbol ${result}`);
-    return result;
+export async function getSymbolName(symbol: string) {
+    const result = await prisma.stocks.findUnique({ where: { code: symbol } });
+    if(result) return result.name;
+    else return null;
 }
 
 export async function getStockData(param: { symbol: string; start: string; end: string }) {
@@ -55,16 +53,16 @@ export function addIndicator(
         emalong?: number;
     }[] = [];
 
-    const useHLBand = param.HLBand != null && param.HLBand > 0;
+    const useHLBand = param.HLBand && param.HLBand > 0;
     let spanHLBand = 0;
-    if (param.HLBand != null) spanHLBand = param.HLBand;
+    if (param.HLBand) spanHLBand = param.HLBand;
 
-    const useEMA = param.EMA != null && param.EMA.short > 0 && param.EMA.long > 0;
+    const useEMA = param.EMA && param.EMA.short > 0 && param.EMA.long > 0;
     let spanEMAShort = 0,
         spanEMALong = 0,
         weightShort = 0,
         weightLong = 0;
-    if (param.EMA != null) {
+    if (param.EMA) {
         spanEMAShort = param.EMA.short;
         spanEMALong = param.EMA.long;
         weightShort = 2 / (param.EMA.short + 1);
@@ -247,7 +245,7 @@ export async function SimulateSmashday(param: {
                 endDate: prices[i].date,
                 tradeType: tradeType,
                 outcome: outcome,
-                amount: amount.toFixed(2),
+                amount: amount.toFixed(1),
             });
             tradeType = "";
         } else {

@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useState, useRef } from "react";
+import { FormEvent, useState, useRef, ChangeEvent } from "react";
 import ReactECharts from "echarts-for-react";
-import { json } from "stream/consumers";
+import { SELECT_ACTION_TYPE } from "echarts/types/src/util/states.js";
 
 export default function Page() {
     const [isFormVisible, setIsFormVisible] = useState(false);
@@ -21,7 +21,7 @@ export default function Page() {
 
     const [resultVisible, setResultVisible] = useState(false);
     const [chartVisible, setChartVisible] = useState(false);
-    const [stockName, setStockName] = useState("");
+    const [stockName, setStockName] = useState("トヨタ自動車");
     const [totalProfit, setTotalProfit] = useState("");
     const [totalGain, setTotalGain] = useState("");
     const [totalLoss, setTotalLoss] = useState("");
@@ -140,12 +140,34 @@ export default function Page() {
                 if (response.ok) {
                     alert("メッセージが送信されました！");
                     setIsFormVisible(false); // Hide the form after submission
+                    setMessage("");
                 } else {
                     alert("メッセージの送信に失敗しました。");
                 }
             } catch (err) {
                 alert("メッセージの送信に失敗しました。");
             }
+        }
+    };
+
+    const submitSymbolName = async (e : ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        try {
+            setStockSymbol(e.target.value);
+            const response = await fetch("http://192.168.0.105:3000/api/symbolname", {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    symbol: e.target.value,
+                }),
+            });
+            const stockName = (await response.json()).stockName;
+            setStockName(stockName);
+        } catch (err) {
+            alert("メッセージの送信が失敗しました");
         }
     };
 
@@ -170,9 +192,9 @@ export default function Page() {
                 }),
             });
             const jsonData = await response.json();
-            setTotalProfit((jsonData.total).toFixed(2));
-            setTotalGain((jsonData.totalGain).toFixed(2));
-            setTotalLoss((jsonData.totalLoss).toFixed(2));
+            setTotalProfit((jsonData.total).toFixed(1));
+            setTotalGain((jsonData.totalGain).toFixed(1));
+            setTotalLoss((jsonData.totalLoss).toFixed(1));
             setCntGain((jsonData.cntGain));
             setCntLoss((jsonData.cntLoss));
             setDetails(jsonData.details);
@@ -274,7 +296,17 @@ export default function Page() {
                             }`}
                             onClick={() => setActiveTab("insideday")}
                         >
-                            insideday
+                            insideday(改修中)
+                        </button>
+                        <button
+                            className={`py-2 px-4 text-lg font-semibold ${
+                                activeTab === "swingplay"
+                                    ? "text-blue-500 border-b-2 border-blue-500"
+                                    : "text-gray-600"
+                            }`}
+                            onClick={() => setActiveTab("swingplay")}
+                        >
+                            swingplay(改修中)
                         </button>
                     </div>
                 </div>
@@ -285,19 +317,27 @@ export default function Page() {
                         <div className="mb-4">
                             <label
                                 htmlFor="stockSymbol"
-                                className="block text-gray-700 font-medium mb-2"
+                                className="block text-gray-700 font-medium"
                             >
                                 銘柄
                             </label>
-                            <input
-                                type="text"
-                                id="stockSymbol"
-                                value={stockSymbol}
-                                onChange={(e) => setStockSymbol(e.target.value)}
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                placeholder="銘柄シンボルを入力"
-                                required
-                            />
+                            <div className="flex">
+                                <input
+                                    type="text"
+                                    id="stockSymbol"
+                                    value={stockSymbol}
+                                    onChange={submitSymbolName}
+                                    className="w-1/2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    placeholder="銘柄シンボルを入力"
+                                    required
+                                />
+                                <label
+                                htmlFor="stockSymbol"
+                                className="w-1/2 px-4 py-2 block text-gray-700 font-medium"
+                            >
+                                - {stockName}
+                            </label>
+                            </div>
                         </div>
 
                         <div className="mb-4">
@@ -571,7 +611,7 @@ export default function Page() {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="h-[90vh] overflow-x-scroll">
+                                        <div className="h-screen overflow-x-scroll">
                                             <ReactECharts option={options} />
                                         </div>
                                     </div>
