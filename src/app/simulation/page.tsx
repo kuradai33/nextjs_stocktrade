@@ -9,6 +9,8 @@ export default function Page() {
     const [message, setMessage] = useState("");
 
     const [activeTab, setActiveTab] = useState("smashday");
+    const [helpSmashday, setHelpSmashday] = useState("");
+    const [editHelp, setEditHelp] = useState(false);
     const [stockSymbol, setStockSymbol] = useState("7203");
     const [startDate, setStartDate] = useState("2019-01-01");
     const [endDate, setEndDate] = useState("2024-01-01");
@@ -31,7 +33,9 @@ export default function Page() {
         { startDate: "2019-01-01", endDate: "2024-01-01", outcome: "Gain", amount: "100" },
     ]);
 
-    const [chartData, setChartData] = useState([{date: "", open: 0, close: 0, high: 0, low: 0, emashort: 0, emalong: 0}]);
+    const [chartData, setChartData] = useState([
+        { date: "", open: 0, close: 0, high: 0, low: 0, emashort: 0, emalong: 0 },
+    ]);
     const [chartDate, setChartDate] = useState([""]);
     const [chartEMAShort, setChartEMAShort] = useState([0]);
     const [chartEMALong, setChartEMALong] = useState([0]);
@@ -150,7 +154,7 @@ export default function Page() {
         }
     };
 
-    const submitSymbolName = async (e : ChangeEvent<HTMLInputElement>) => {
+    const submitSymbolName = async (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         try {
             setStockSymbol(e.target.value);
@@ -192,11 +196,11 @@ export default function Page() {
                 }),
             });
             const jsonData = await response.json();
-            setTotalProfit((jsonData.total).toFixed(1));
-            setTotalGain((jsonData.totalGain).toFixed(1));
-            setTotalLoss((jsonData.totalLoss).toFixed(1));
-            setCntGain((jsonData.cntGain));
-            setCntLoss((jsonData.cntLoss));
+            setTotalProfit(jsonData.total.toFixed(1));
+            setTotalGain(jsonData.totalGain.toFixed(1));
+            setTotalLoss(jsonData.totalLoss.toFixed(1));
+            setCntGain(jsonData.cntGain);
+            setCntLoss(jsonData.cntLoss);
             setDetails(jsonData.details);
             setResultVisible(true);
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -314,7 +318,31 @@ export default function Page() {
                 {/* Form */}
                 <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg mb-8">
                     <form onSubmit={submitSimulation}>
-                        <div className="mb-4">
+                        <div className="mb-4 relative">
+                            <div className="absolute right-0 top-0 flex items-center">
+                                <div className="relative group">
+                                    <button
+                                        className="w-6 h-6 bg-gray-300 text-gray-700 rounded-full flex justify-center items-center cursor-pointer"
+                                        title="Help"
+                                        onClick={() => setEditHelp(!editHelp)}
+                                        type="button"
+                                    >
+                                        ?
+                                    </button>
+                                    {editHelp ? (
+                                        <textarea
+                                            className="absolute bottom-12 right-0 w-40 p-2 bg-gray-700 text-white text-sm rounded-md shadow-md"
+                                            id="message"
+                                            value={helpSmashday}
+                                            onChange={(e) => setHelpSmashday(e.target.value)}
+                                        ></textarea>
+                                    ) : (
+                                        <div className="absolute bottom-12 right-0 hidden w-40 p-2 bg-gray-700 text-white text-sm rounded-md shadow-md group-hover:block">
+                                            <p>{helpSmashday}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                             <label
                                 htmlFor="stockSymbol"
                                 className="block text-gray-700 font-medium"
@@ -332,11 +360,11 @@ export default function Page() {
                                     required
                                 />
                                 <label
-                                htmlFor="stockSymbol"
-                                className="w-1/2 px-4 py-2 block text-gray-700 font-medium"
-                            >
-                                - {stockName}
-                            </label>
+                                    htmlFor="stockSymbol"
+                                    className="w-1/2 px-4 py-2 block text-gray-700 font-medium"
+                                >
+                                    - {stockName}
+                                </label>
                             </div>
                         </div>
 
@@ -531,12 +559,20 @@ export default function Page() {
                         <div className="mb-6">
                             <h3 className="text-xl font-semibold">合計: ¥{totalProfit}</h3>
                             <div className="flex flex-row">
-                                <h4 className="basis-1/3 text-base font-semibold text-green-500">合計利益: ¥{totalGain}</h4>
-                                <h4 className="basis-1/3 text-base font-semibold text-red-500">合計損失: ¥{totalLoss}</h4>
+                                <h4 className="basis-1/3 text-base font-semibold text-green-500">
+                                    合計利益: ¥{totalGain}
+                                </h4>
+                                <h4 className="basis-1/3 text-base font-semibold text-red-500">
+                                    合計損失: ¥{totalLoss}
+                                </h4>
                             </div>
                             <div className="flex flex-row">
-                                <h4 className="basis-1/3 text-base font-semibold text-green-500">利益回数: {cntGain} 回</h4>
-                                <h4 className="basis-1/3 text-base font-semibold text-red-500">損失回数: {cntLoss} 回</h4>
+                                <h4 className="basis-1/3 text-base font-semibold text-green-500">
+                                    利益回数: {cntGain} 回
+                                </h4>
+                                <h4 className="basis-1/3 text-base font-semibold text-red-500">
+                                    損失回数: {cntLoss} 回
+                                </h4>
                             </div>
                         </div>
 
@@ -554,8 +590,16 @@ export default function Page() {
                                         </thead>
                                         <tbody>
                                             {details.map((detail, index) => (
-                                                <tr key={index} onClick={() => submitChart(detail.startDate,detail.endDate)}
-                                                className="cursor-pointer hover:bg-gray-200">
+                                                <tr
+                                                    key={index}
+                                                    onClick={() =>
+                                                        submitChart(
+                                                            detail.startDate,
+                                                            detail.endDate
+                                                        )
+                                                    }
+                                                    className="cursor-pointer hover:bg-gray-200"
+                                                >
                                                     <td className="border-b py-2 px-4">
                                                         {detail.startDate} ~ {detail.endDate}
                                                     </td>
@@ -596,7 +640,9 @@ export default function Page() {
                                                     type="number"
                                                     id="chartEMAShort"
                                                     value={chartEMAShortSpan}
-                                                    onChange={(e) => setChartEMAShortSpan(Number(e.target.value))}
+                                                    onChange={(e) =>
+                                                        setChartEMAShortSpan(Number(e.target.value))
+                                                    }
                                                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                                                 />
                                             </div>
@@ -606,7 +652,9 @@ export default function Page() {
                                                     type="number"
                                                     id="chartEMALong"
                                                     value={chartEMALongSpan}
-                                                    onChange={(e) => setChartEMALongSpan(Number(e.target.value))}
+                                                    onChange={(e) =>
+                                                        setChartEMALongSpan(Number(e.target.value))
+                                                    }
                                                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                                                 />
                                             </div>
