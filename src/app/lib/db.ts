@@ -1,16 +1,40 @@
 import prisma from "./prisma";
+import { SignalType } from "./defines";
 
-export async function addMessageInForm(message: string){
+export async function addMessageInForm(message: string) {
     const post = await prisma.form.create({
         data: {
             message: message,
         },
-    })
+    });
+}
+
+export async function getHelpText(signal: string) {
+    const result = await prisma.signalExplanation.findFirst({ where: { signal: signal } });
+    return result ? result.text : "";
+}
+
+export async function setHelpText(signal: string, text: string) {
+    const id = await prisma.signalExplanation.findFirst({
+        where: { signal: signal },
+        select: { id: true },
+    });
+    if(id){
+        await prisma.signalExplanation.update({
+            where: { id: id?.id },
+            data: { text: text },
+        });
+    }
+    else{
+        await prisma.signalExplanation.create({
+            data: { signal: signal, text: text },
+        });
+    }
 }
 
 export async function getSymbolName(symbol: string) {
     const result = await prisma.stocks.findUnique({ where: { code: symbol } });
-    if(result) return result.name;
+    if (result) return result.name;
     else return null;
 }
 
@@ -38,12 +62,12 @@ export async function getStockData(param: { symbol: string; start: string; end: 
 }
 
 export function addIndicator(
-    rawPrices: { date: string; open: number, close: number; high: number; low: number }[],
+    rawPrices: { date: string; open: number; close: number; high: number; low: number }[],
     param: { HLBand: number | null; EMA: { short: number; long: number } | null }
 ) {
     let result: {
         date: string;
-        open: number,
+        open: number;
         close: number;
         high: number;
         low: number;
@@ -74,7 +98,7 @@ export function addIndicator(
     for (let i = 0; i < rawPrices.length; i++) {
         let price: {
             date: string;
-            open: number,
+            open: number;
             close: number;
             high: number;
             low: number;

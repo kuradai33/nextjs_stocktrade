@@ -1,25 +1,18 @@
 "use client";
 
-import { FormEvent, useState, useRef, ChangeEvent } from "react";
+import { FormEvent, useState, useRef, ChangeEvent, SetStateAction } from "react";
 import ReactECharts from "echarts-for-react";
-import { SELECT_ACTION_TYPE } from "echarts/types/src/util/states.js";
+
+import Form from "./component/Form";
+import Tabs from "./component/Tabs";
+import Setting from "./component/Setting";
+import { SignalType } from "../lib/defines";
 
 export default function Page() {
-    const [isFormVisible, setIsFormVisible] = useState(false);
-    const [message, setMessage] = useState("");
+    const [activeTab, setActiveTab] = useState<SignalType>("smashday");
+    const [stockSymbol, setStockSymbol] = useState<string>("7203");
 
-    const [activeTab, setActiveTab] = useState("smashday");
-    const [helpSmashday, setHelpSmashday] = useState("");
-    const [editHelp, setEditHelp] = useState(false);
-    const [stockSymbol, setStockSymbol] = useState("7203");
-    const [startDate, setStartDate] = useState("2019-01-01");
-    const [endDate, setEndDate] = useState("2024-01-01");
-    const [tradeType, setTradeType] = useState("buy");
-    const [useHLBand, setUseHLBand] = useState(false);
-    const [spanHLBand, setSpanHLBand] = useState(20);
-    const [useEMA, setUseEMA] = useState(false);
-    const [spanEMAShort, setSpanEMAShort] = useState(13);
-    const [spanEMALong, setSpanEMALong] = useState(26);
+    const [helpMessage, setHelpMessage] = useState("");
 
     const [resultVisible, setResultVisible] = useState(false);
     const [chartVisible, setChartVisible] = useState(false);
@@ -129,86 +122,6 @@ export default function Page() {
         ],
     };
 
-    const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (window.confirm("メッセージを送信しますか？")) {
-            try {
-                const response = await fetch("http://192.168.0.105:3000/api/form", {
-                    method: "POST",
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ message }),
-                });
-                if (response.ok) {
-                    alert("メッセージが送信されました！");
-                    setIsFormVisible(false); // Hide the form after submission
-                    setMessage("");
-                } else {
-                    alert("メッセージの送信に失敗しました。");
-                }
-            } catch (err) {
-                alert("メッセージの送信に失敗しました。");
-            }
-        }
-    };
-
-    const submitSymbolName = async (e: ChangeEvent<HTMLInputElement>) => {
-        e.preventDefault();
-        try {
-            setStockSymbol(e.target.value);
-            const response = await fetch("http://192.168.0.105:3000/api/symbolname", {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    symbol: e.target.value,
-                }),
-            });
-            const stockName = (await response.json()).stockName;
-            setStockName(stockName);
-        } catch (err) {
-            alert("メッセージの送信が失敗しました");
-        }
-    };
-
-    const submitSimulation = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        try {
-            const response = await fetch("http://192.168.0.105:3000/api/post", {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    mode: activeTab,
-                    symbol: stockSymbol,
-                    start: startDate,
-                    end: endDate,
-                    tradeType: tradeType,
-                    HLBand: useHLBand ? spanHLBand : null,
-                    EMAShort: useEMA ? spanEMAShort : null,
-                    EMALong: useEMA ? spanEMALong : null,
-                }),
-            });
-            const jsonData = await response.json();
-            setTotalProfit(jsonData.total.toFixed(1));
-            setTotalGain(jsonData.totalGain.toFixed(1));
-            setTotalLoss(jsonData.totalLoss.toFixed(1));
-            setCntGain(jsonData.cntGain);
-            setCntLoss(jsonData.cntLoss);
-            setDetails(jsonData.details);
-            setResultVisible(true);
-            resultRef.current?.scrollIntoView({ behavior: "smooth" });
-        } catch (err) {
-            alert("メッセージの送信が失敗しました");
-        }
-    };
-
     const submitChart = async (start: string, end: string) => {
         try {
             const response = await fetch("http://192.168.0.105:3000/api/chart", {
@@ -238,312 +151,32 @@ export default function Page() {
 
     return (
         <div className="min-h-screen bg-gray-100">
-            {/* フォームを開くボタン */}
-            <button
-                onClick={() => setIsFormVisible(!isFormVisible)}
-                className="fixed top-4 right-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-                フォームを開く
-            </button>
-
-            {/* 固定されたフォーム */}
-            {isFormVisible && (
-                <div className="fixed top-16 right-4 bg-white p-4 rounded-lg shadow-lg z-50">
-                    <form onSubmit={handleFormSubmit}>
-                        <div className="mb-4">
-                            <label
-                                htmlFor="message"
-                                className="block text-gray-700 font-medium mb-2"
-                            >
-                                メッセージ
-                            </label>
-                            <textarea
-                                id="message"
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                className="w-full h-24 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                placeholder="メッセージを入力"
-                                required
-                            ></textarea>
-                        </div>
-                        <button
-                            type="submit"
-                            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
-                        >
-                            送信
-                        </button>
-                    </form>
-                </div>
-            )}
+            {/* Form */}
+            <Form />
 
             <div className="p-8">
+                {/* Title */}
                 <h1 className="text-4xl font-bold text-center mb-8">シミュレーター</h1>
 
                 {/* Tabs */}
-                <div className="flex justify-center mb-6">
-                    <div className="inline-flex border-b border-gray-300">
-                        <button
-                            className={`py-2 px-4 text-lg font-semibold ${
-                                activeTab === "smashday"
-                                    ? "text-blue-500 border-b-2 border-blue-500"
-                                    : "text-gray-600"
-                            }`}
-                            onClick={() => setActiveTab("smashday")}
-                        >
-                            smashday
-                        </button>
-                        <button
-                            className={`py-2 px-4 text-lg font-semibold ${
-                                activeTab === "insideday"
-                                    ? "text-blue-500 border-b-2 border-blue-500"
-                                    : "text-gray-600"
-                            }`}
-                            onClick={() => setActiveTab("insideday")}
-                        >
-                            insideday(改修中)
-                        </button>
-                        <button
-                            className={`py-2 px-4 text-lg font-semibold ${
-                                activeTab === "swingplay"
-                                    ? "text-blue-500 border-b-2 border-blue-500"
-                                    : "text-gray-600"
-                            }`}
-                            onClick={() => setActiveTab("swingplay")}
-                        >
-                            swingplay(改修中)
-                        </button>
-                    </div>
-                </div>
+                <Tabs activeTab={activeTab} setActiveTab={setActiveTab} setHelpMessage={setHelpMessage}/>
 
-                {/* Form */}
-                <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg mb-8">
-                    <form onSubmit={submitSimulation}>
-                        <div className="mb-4 relative">
-                            <div className="absolute right-0 top-0 flex items-center">
-                                <div className="relative group">
-                                    <button
-                                        className="w-6 h-6 bg-gray-300 text-gray-700 rounded-full flex justify-center items-center cursor-pointer"
-                                        title="Help"
-                                        onClick={() => setEditHelp(!editHelp)}
-                                        type="button"
-                                    >
-                                        ?
-                                    </button>
-                                    {editHelp ? (
-                                        <textarea
-                                            className="absolute bottom-12 right-0 w-40 p-2 bg-gray-700 text-white text-sm rounded-md shadow-md"
-                                            id="message"
-                                            value={helpSmashday}
-                                            onChange={(e) => setHelpSmashday(e.target.value)}
-                                        ></textarea>
-                                    ) : (
-                                        <div className="absolute bottom-12 right-0 hidden w-40 p-2 bg-gray-700 text-white text-sm rounded-md shadow-md group-hover:block">
-                                            <p>{helpSmashday}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <label
-                                htmlFor="stockSymbol"
-                                className="block text-gray-700 font-medium"
-                            >
-                                銘柄
-                            </label>
-                            <div className="flex">
-                                <input
-                                    type="text"
-                                    id="stockSymbol"
-                                    value={stockSymbol}
-                                    onChange={submitSymbolName}
-                                    className="w-1/2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                    placeholder="銘柄シンボルを入力"
-                                    required
-                                />
-                                <label
-                                    htmlFor="stockSymbol"
-                                    className="w-1/2 px-4 py-2 block text-gray-700 font-medium"
-                                >
-                                    - {stockName}
-                                </label>
-                            </div>
-                        </div>
-
-                        <div className="mb-4">
-                            <label
-                                htmlFor="startDate"
-                                className="block text-gray-700 font-medium mb-2"
-                            >
-                                開始日
-                            </label>
-                            <input
-                                type="date"
-                                id="startDate"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                required
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <label
-                                htmlFor="endDate"
-                                className="block text-gray-700 font-medium mb-2"
-                            >
-                                終了日
-                            </label>
-                            <input
-                                type="date"
-                                id="endDate"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                required
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <label
-                                htmlFor="tradeType"
-                                className="block text-gray-700 font-medium mb-2"
-                            >
-                                取引タイプ
-                            </label>
-                            <select
-                                id="tradeType"
-                                value={tradeType}
-                                onChange={(e) => setTradeType(e.target.value)}
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            >
-                                <option value="buy">買い</option>
-                                <option value="sell">売り</option>
-                                <option value="both">両方</option>
-                            </select>
-                        </div>
-
-                        {/* HLBand Option */}
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-medium mb-2">
-                                HLBandを使用しますか？
-                            </label>
-                            <div className="flex items-center">
-                                <input
-                                    type="radio"
-                                    id="hlband-yes"
-                                    name="useHLBand"
-                                    value="yes"
-                                    checked={useHLBand}
-                                    onChange={() => setUseHLBand(true)}
-                                    className="mr-2"
-                                />
-                                <label htmlFor="hlband-yes" className="mr-4">
-                                    はい
-                                </label>
-                                <input
-                                    type="radio"
-                                    id="hlband-no"
-                                    name="useHLBand"
-                                    value="no"
-                                    checked={!useHLBand}
-                                    onChange={() => setUseHLBand(false)}
-                                    className="mr-2"
-                                />
-                                <label htmlFor="hlband-no">いいえ</label>
-                            </div>
-
-                            {useHLBand && (
-                                <div className="mt-2">
-                                    <label
-                                        htmlFor="spanHLBand"
-                                        className="block text-gray-700 font-medium mb-2"
-                                    >
-                                        HLBandの期間
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="spanHLBand"
-                                        value={spanHLBand}
-                                        onChange={(e) => setSpanHLBand(Number(e.target.value))}
-                                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        required
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* EMA Option */}
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-medium mb-2">
-                                EMAを使用しますか？
-                            </label>
-                            <div className="flex items-center">
-                                <input
-                                    type="radio"
-                                    id="ema-yes"
-                                    name="useEMA"
-                                    value="yes"
-                                    checked={useEMA}
-                                    onChange={() => setUseEMA(true)}
-                                    className="mr-2"
-                                />
-                                <label htmlFor="ema-yes" className="mr-4">
-                                    はい
-                                </label>
-                                <input
-                                    type="radio"
-                                    id="ema-no"
-                                    name="useEMA"
-                                    value="no"
-                                    checked={!useEMA}
-                                    onChange={() => setUseEMA(false)}
-                                    className="mr-2"
-                                />
-                                <label htmlFor="ema-no">いいえ</label>
-                            </div>
-
-                            {useEMA && (
-                                <div className="mt-2">
-                                    <label
-                                        htmlFor="spanEMAShort"
-                                        className="block text-gray-700 font-medium mb-2"
-                                    >
-                                        EMAの短期期間
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="spanEMAShort"
-                                        value={spanEMAShort}
-                                        onChange={(e) => setSpanEMAShort(Number(e.target.value))}
-                                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        required
-                                    />
-
-                                    <label
-                                        htmlFor="spanEMALong"
-                                        className="block text-gray-700 font-medium mb-2 mt-4"
-                                    >
-                                        EMAの長期期間
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="spanEMALong"
-                                        value={spanEMALong}
-                                        onChange={(e) => setSpanEMALong(Number(e.target.value))}
-                                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        required
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        >
-                            シミュレーション開始
-                        </button>
-                    </form>
-                </div>
+                {/* Setting */}
+                <Setting
+                    activeTab={activeTab}
+                    helpMessage={helpMessage}
+                    setHelpMessage={setHelpMessage}
+                    resultRef={resultRef}
+                    sets={{
+                        setTotalProfit: setTotalProfit,
+                        setTotalGain: setTotalGain,
+                        setTotalLoss: setTotalLoss,
+                        setCntGain: setCntGain,
+                        setCntLoss: setCntLoss,
+                        setDetails: setDetails,
+                        setResultVisible: setResultVisible,
+                    }}
+                />
             </div>
 
             {/* Simulation Result */}
