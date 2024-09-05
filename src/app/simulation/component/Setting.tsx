@@ -9,12 +9,15 @@ import Help from "./Help";
 
 export default function Page(props: {
     activeTab: SignalType;
+    stockSymbol: string;
+    setStockSymbol: Dispatch<SetStateAction<string>>;
+    stockName: string;
+    setStockName: Dispatch<SetStateAction<string>>;
     helpMessage: string;
     setHelpMessage: Dispatch<SetStateAction<string>>;
     resultRef: RefObject<HTMLDivElement>;
     sets: settingSets;
 }) {
-    const [stockSymbol, setStockSymbol] = useState("7203");
     const [startDate, setStartDate] = useState("2019-01-01");
     const [endDate, setEndDate] = useState("2024-01-01");
     const [tradeType, setTradeType] = useState("buy");
@@ -23,13 +26,14 @@ export default function Page(props: {
     const [useEMA, setUseEMA] = useState(false);
     const [spanEMAShort, setSpanEMAShort] = useState(13);
     const [spanEMALong, setSpanEMALong] = useState(26);
-
-    const [stockName, setStockName] = useState("トヨタ自動車");
+    const [spanEMAShortSwingplay, setSpanEMAShortSwingplay] = useState(8);
+    const [spanEMALongSwingplay, setSpanEMALongSwingplay] = useState(21);
+    const [closingPeriod, setClosingPeriod] = useState(10);
 
     const submitSymbolName = async (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         try {
-            setStockSymbol(e.target.value);
+            props.setStockSymbol(e.target.value);
             const response = await fetch("http://192.168.0.105:3000/api/symbolname", {
                 method: "POST",
                 headers: {
@@ -41,7 +45,7 @@ export default function Page(props: {
                 }),
             });
             const stockName = (await response.json()).stockName;
-            setStockName(stockName);
+            props.setStockName(stockName);
         } catch (err) {
             alert("メッセージの送信が失敗しました");
         }
@@ -58,13 +62,17 @@ export default function Page(props: {
                 },
                 body: JSON.stringify({
                     mode: props.activeTab,
-                    symbol: stockSymbol,
+                    symbol: props.stockSymbol,
                     start: startDate,
                     end: endDate,
                     tradeType: tradeType,
                     HLBand: useHLBand ? spanHLBand : null,
                     EMAShort: useEMA ? spanEMAShort : null,
                     EMALong: useEMA ? spanEMALong : null,
+                    EMAShortswingplay:
+                        props.activeTab == "swingplay" ? spanEMAShortSwingplay : null,
+                    EMALongswingplay: props.activeTab == "swingplay" ? spanEMALongSwingplay : null,
+                    closingPeriod: closingPeriod,
                 }),
             });
             const jsonData = await response.json();
@@ -87,7 +95,11 @@ export default function Page(props: {
                 <form onSubmit={submitSimulation}>
                     <div className="mb-4 relative">
                         {/* Help */}
-                        <Help activeTab={props.activeTab} helpMessage={props.helpMessage} setHelpMessage={props.setHelpMessage}/>
+                        <Help
+                            activeTab={props.activeTab}
+                            helpMessage={props.helpMessage}
+                            setHelpMessage={props.setHelpMessage}
+                        />
 
                         {/* Option */}
                         <label htmlFor="stockSymbol" className="block text-gray-700 font-medium">
@@ -97,7 +109,7 @@ export default function Page(props: {
                             <input
                                 type="text"
                                 id="stockSymbol"
-                                value={stockSymbol}
+                                value={props.stockSymbol}
                                 onChange={submitSymbolName}
                                 className="w-1/2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 placeholder="銘柄シンボルを入力"
@@ -107,7 +119,7 @@ export default function Page(props: {
                                 htmlFor="stockSymbol"
                                 className="w-1/2 px-4 py-2 block text-gray-700 font-medium"
                             >
-                                - {stockName}
+                                - {props.stockName}
                             </label>
                         </div>
                     </div>
@@ -142,6 +154,12 @@ export default function Page(props: {
 
                     {props.activeTab === "smashday" && (
                         <SettingSmashday
+                            tradeType={tradeType}
+                            useHLBand={useHLBand}
+                            spanHLBand={spanHLBand}
+                            useEMA={useEMA}
+                            spanEMAShort={spanEMAShort}
+                            spanEMALong={spanEMALong}
                             setTradeType={setTradeType}
                             setUseHLBand={setUseHLBand}
                             setSpanHLBand={setSpanHLBand}
@@ -151,7 +169,24 @@ export default function Page(props: {
                         />
                     )}
                     {props.activeTab === "insideday" && <SettingInsideday />}
-                    {props.activeTab === "swingplay" && <SettingSwingplay />}
+                    {props.activeTab === "swingplay" && (
+                        <SettingSwingplay
+                            tradeType={tradeType}
+                            closingPeriod={closingPeriod}
+                            spanEMAShortSwingplay={spanEMAShortSwingplay}
+                            spanEMALongSwingplay={spanEMALongSwingplay}
+                            useEMA={useEMA}
+                            spanEMAShort={spanEMAShort}
+                            spanEMALong={spanEMALong}
+                            setTradeType={setTradeType}
+                            setClosingPeriod={setClosingPeriod}
+                            setSpanEMAShortSwingplay={setSpanEMAShortSwingplay}
+                            setSpanEMALongSwingplay={setSpanEMALongSwingplay}
+                            setUseEMA={setUseEMA}
+                            setSpanEMAShort={setSpanEMAShort}
+                            setSpanEMALong={setSpanEMALong}
+                        />
+                    )}
 
                     <button
                         type="submit"

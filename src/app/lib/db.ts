@@ -1,5 +1,6 @@
 import prisma from "./prisma";
 import { SignalType } from "./defines";
+import { asc } from "echarts/types/src/util/number.js";
 
 export async function addMessageInForm(message: string) {
     const post = await prisma.form.create({
@@ -19,13 +20,12 @@ export async function setHelpText(signal: string, text: string) {
         where: { signal: signal },
         select: { id: true },
     });
-    if(id){
+    if (id) {
         await prisma.signalExplanation.update({
             where: { id: id?.id },
             data: { text: text },
         });
-    }
-    else{
+    } else {
         await prisma.signalExplanation.create({
             data: { signal: signal, text: text },
         });
@@ -38,9 +38,14 @@ export async function getSymbolName(symbol: string) {
     else return null;
 }
 
-export async function getStockData(param: { symbol: string; start: string; end: string }) {
+export async function getStockData(param: {
+    symbol: string;
+    start: string;
+    end: string;
+    extradate: number;
+}) {
     const symbol_id = (await prisma.stocks.findUnique({ where: { code: param.symbol } }))?.id;
-    const rawPrices = await prisma.stockprices.findMany({
+    let rawPrices = await prisma.stockprices.findMany({
         where: {
             AND: [
                 { stock_id: symbol_id },
@@ -57,6 +62,55 @@ export async function getStockData(param: { symbol: string; start: string; end: 
             volume: true,
         },
     });
+    const rawPrePrices = (
+        await prisma.stockprices.findMany({
+            where: {
+                AND: [{ stock_id: symbol_id }, { date_num: { lte: convertDate_num(param.start) } }],
+            },
+            orderBy: {
+                date: "desc",
+            },
+            select: {
+                date: true,
+                open: true,
+                close: true,
+                high: true,
+                low: true,
+                volume: true,
+            },
+            skip: 1,
+            take: param.extradate,
+        })
+    ).sort((a, b) => {
+        if (a.date == b.date) {
+            return 0;
+        } else if (a.date > b.date) {
+            return 1;
+        } else {
+            return -1;
+        }
+    });
+    const rawPostPrices = await prisma.stockprices.findMany({
+        where: {
+            AND: [{ stock_id: symbol_id }, { date_num: { gte: convertDate_num(param.end) } }],
+        },
+        orderBy: {
+            date: "asc",
+        },
+        select: {
+            date: true,
+            open: true,
+            close: true,
+            high: true,
+            low: true,
+            volume: true,
+        },
+        skip: 1,
+        take: param.extradate,
+    });
+
+    rawPrices = rawPrePrices.concat(rawPrices).concat(rawPostPrices);
+    console.log(rawPrices);
 
     return rawPrices;
 }
@@ -241,7 +295,7 @@ export async function SimulateSmashday(param: {
                     outcome = "Loss";
                 }
                 // Gain Fix
-                else if (prices[i].high < borderLow) {
+                else if (prices[i].low < borderLow) {
                     amount = tradePrice - borderLow;
                     outcome = "Gain";
                 }
@@ -316,6 +370,170 @@ export async function SimulateSmashday(param: {
                     lowestClose = prices[i - 1].close;
                     startDate = prices[i].date;
                     tradeType = "Sell";
+                    continue;
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+export async function SimulateSwingplay(param: {
+    symbol: string;
+    start: string;
+    end: string;
+    tradeType: "buy" | "sell" | "both";
+    closingPeriod: number;
+    EMA: { short: number; long: number };
+    exEMA?: { short: number; long: number };
+}) {
+    const symbol_id = (await prisma.stocks.findUnique({ where: { code: param.symbol } }))?.id;
+    const rawPrices = await prisma.stockprices.findMany({
+        where: {
+            AND: [
+                { stock_id: symbol_id },
+                { date_num: { gte: convertDate_num(param.start) } },
+                { date_num: { lte: convertDate_num(param.end) } },
+            ],
+        },
+        select: {
+            date: true,
+            open: true,
+            close: true,
+            high: true,
+            low: true,
+        },
+    });
+
+    const prices = addIndicator(rawPrices, { HLBand: null, EMA: param.EMA });
+
+    let result: {
+        sumAll: number;
+        sumGain: number;
+        sumLoss: number;
+        cntGain: number;
+        cntLoss: number;
+        details: {
+            startDate: string;
+            endDate: string;
+            tradeType: "Buy" | "Sell" | "";
+            outcome: string;
+            amount: string;
+        }[];
+    } = { sumAll: 0, sumGain: 0, sumLoss: 0, cntGain: 0, cntLoss: 0, details: [] };
+
+    let tradePrice = 0,
+        tradeType: "Buy" | "Sell" | "" = "",
+        tradePeriod = 0,
+        over4per = false,
+        startDate = "";
+
+    const useBuy = param.tradeType == "buy" || param.tradeType == "both",
+        useSell = param.tradeType == "sell" || param.tradeType == "both";
+
+    for (let i = 1; i < prices.length; i++) {
+        if (tradeType != "") {
+            let outcome: string = "",
+                amount = 0;
+            if (tradeType == "Buy") {
+                const emalong = prices[i - 1].emalong;
+                // Loss
+                if (!over4per && prices[i].low < tradePrice * 0.96) {
+                    amount = tradePrice * 0.96 - tradePrice;
+                    outcome = "損切(4%前)";
+                }
+                else if(over4per && emalong && prices[i].low < emalong){
+                    amount = emalong - tradePrice;
+                    outcome = "損切(4%後)";
+                }
+                // Mid
+                else if (tradePeriod >= param.closingPeriod) {
+                    amount = prices[i].close - tradePrice;
+                    outcome = "期間手仕舞い";
+                }
+                // Gain
+                else if (prices[i].high > tradePrice * 1.08) {
+                    amount = tradePrice * 1.08 - tradePrice;
+                    outcome = "利益";
+                }
+                else {
+                    tradePeriod++;
+                    if(!over4per && prices[i].high > tradePrice * 1.04) over4per = true;
+                    continue;
+                }
+            }
+            else if ((tradeType = "Sell")) {
+                const emalong = prices[i - 1].emalong;
+                // Loss
+                if (!over4per && prices[i].high > tradePrice * 1.04) {
+                    amount = tradePrice - tradePrice * 1.04;
+                    outcome = "損切(4%前)";
+                }
+                else if(over4per && emalong && prices[i].high > emalong){
+                    amount = tradePrice - emalong;
+                    outcome = "損切(4%後)";
+                }
+                // Mid
+                else if (tradePeriod >= param.closingPeriod) {
+                    amount = tradePrice - prices[i].close;
+                    outcome = "期間手仕舞い";
+                }
+                // Gain
+                else if (prices[i].low < tradePrice * 0.92) {
+                    amount = tradePrice - tradePrice * 0.92;
+                    outcome = "利益";
+                }
+                else {
+                    tradePeriod++;
+                    if(!over4per && prices[i].low < tradePrice * 0.96) over4per = true;
+                    continue;
+                }
+            }
+            result.sumAll += amount;
+            result.sumGain += Math.max(amount, 0);
+            result.sumLoss += Math.min(amount, 0);
+            if(amount >= 0) result.cntGain++;
+            else result.cntLoss++;
+            
+            result.details.push({
+                startDate: startDate,
+                endDate: prices[i].date,
+                tradeType: tradeType,
+                outcome: outcome,
+                amount: (amount >= 0 ? amount.toFixed(1) : "▲" + (-amount).toFixed(1)),
+            });
+            tradeType = "";
+        } else {
+            if (useBuy) {
+                let signalBuy = false;
+                const emashort = prices[i - 1].emashort, emalong = prices[i - 1].emalong;
+                if(emashort && emalong){
+                    signalBuy = emashort > emalong && emashort < prices[i].high;
+                }
+
+                if (signalBuy && emashort) {
+                    tradePrice = emashort;
+                    startDate = prices[i].date;
+                    tradeType = "Buy";
+                    over4per = false;
+                    tradePeriod = 0;
+                    continue;
+                }
+            }
+            if (useSell) {
+                let signalSell = false;
+                const emashort = prices[i - 1].emashort, emalong = prices[i - 1].emalong;
+                if(emashort && emalong){
+                    signalSell = emashort < emalong && emashort > prices[i].low;
+                }
+
+                if (signalSell && emashort) {
+                    tradePrice = emashort;
+                    startDate = prices[i].date;
+                    tradeType = "Sell";
+                    over4per = false;
+                    tradePeriod = 0;
                     continue;
                 }
             }

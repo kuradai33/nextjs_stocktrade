@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     const rawStockData = addIndicator(
-        await getStockData({ symbol: body.symbol, start: body.start, end: body.end }),
+        await getStockData({ symbol: body.symbol, start: body.start, end: body.end, extradate: 5 }),
         { HLBand: null, EMA: { short: body.emashort, long: body.emalong } }
     );
 

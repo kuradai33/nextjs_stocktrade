@@ -11,7 +11,7 @@ export interface settingSets {
             {
                 startDate: string;
                 endDate: string;
-                outcome: string;
+                outcome: "Gain" | "Loss";
                 amount: string;
             }[]
         >

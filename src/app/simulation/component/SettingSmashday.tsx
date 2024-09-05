@@ -3,6 +3,12 @@ import { Dispatch, SetStateAction, useState } from "react";
 import Option from "./Option";
 
 export default function Page(props: {
+    tradeType: string;
+    useHLBand: boolean;
+    spanHLBand: number;
+    useEMA: boolean;
+    spanEMAShort: number;
+    spanEMALong: number;
     setTradeType: Dispatch<SetStateAction<string>>;
     setUseHLBand: Dispatch<SetStateAction<boolean>>;
     setSpanHLBand: Dispatch<SetStateAction<number>>;
@@ -10,13 +16,6 @@ export default function Page(props: {
     setSpanEMAShort: Dispatch<SetStateAction<number>>;
     setSpanEMALong: Dispatch<SetStateAction<number>>;
 }) {
-    const [tradeType, setTradeType] = useState("buy");
-    const [useHLBand, setUseHLBand] = useState(false);
-    const [spanHLBand, setSpanHLBand] = useState(20);
-    const [useEMA, setUseEMA] = useState(false);
-    const [spanEMAShort, setSpanEMAShort] = useState(13);
-    const [spanEMALong, setSpanEMALong] = useState(26);
-
     return (
         <>
             {/* TradeType Option */}
@@ -24,8 +23,8 @@ export default function Page(props: {
                 id={"tradeType"}
                 name={"取引タイプ"}
                 type={"pulldown"}
-                var={tradeType}
-                setVar={setTradeType}
+                var={props.tradeType}
+                setVar={props.setTradeType}
                 select={[
                     { id: "buy", name: "買い" },
                     { id: "sell", name: "売り" },
@@ -38,15 +37,15 @@ export default function Page(props: {
                 id="useHLBand"
                 name={"HLBandを使用しますか？"}
                 type={"radio_yn"}
-                var={useHLBand}
-                setVar={setUseHLBand}
+                var={props.useHLBand}
+                setVar={props.setUseHLBand}
                 switchele={[
                     {
                         id: "spanHLBand",
                         name: "HLBandの期間",
                         type: "number",
-                        var: spanHLBand,
-                        setVar: setSpanHLBand,
+                        var: props.spanHLBand,
+                        setVar: props.setSpanHLBand,
                     },
                 ]}
             />
@@ -56,22 +55,22 @@ export default function Page(props: {
                 id="useEMA"
                 name={"EMAを使用しますか？"}
                 type={"radio_yn"}
-                var={useEMA}
-                setVar={setUseEMA}
+                var={props.useEMA}
+                setVar={props.setUseEMA}
                 switchele={[
                     {
                         id: "spanHLBand",
                         name: "EMAの短期期間",
                         type: "number",
-                        var: spanEMAShort,
-                        setVar: setSpanEMAShort,
+                        var: props.spanEMAShort,
+                        setVar: props.setSpanEMAShort,
                     },
                     {
                         id: "spanHLBand",
                         name: "EMAの長期期間",
                         type: "number",
-                        var: spanEMALong,
-                        setVar: setSpanEMALong,
+                        var: props.spanEMALong,
+                        setVar: props.setSpanEMALong,
                     },
                 ]}
             />
