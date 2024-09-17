@@ -4,7 +4,7 @@ import SettingSmashday from "./SettingSmashday";
 import SettingInsideday from "./SettingInsideday";
 import SettingSwingplay from "./SettingSwingplay";
 import { settingSets } from "../../lib/interfaces";
-import { SignalType } from "../../lib/defines";
+import { SignalType, ipAddress } from "../../lib/defines";
 import Help from "./Help";
 
 export default function Page(props: {
@@ -34,7 +34,7 @@ export default function Page(props: {
         e.preventDefault();
         try {
             props.setStockSymbol(e.target.value);
-            const response = await fetch("http://192.168.0.105:3000/api/symbolname", {
+            const response = await fetch("http://" + ipAddress + ":3000/api/symbolname", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -54,7 +54,7 @@ export default function Page(props: {
     const submitSimulation = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await fetch("http://192.168.0.105:3000/api/post", {
+            const response = await fetch("http://" + ipAddress + ":3000/api/post", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",

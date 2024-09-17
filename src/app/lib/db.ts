@@ -110,7 +110,6 @@ export async function getStockData(param: {
     });
 
     rawPrices = rawPrePrices.concat(rawPrices).concat(rawPostPrices);
-    console.log(rawPrices);
 
     return rawPrices;
 }

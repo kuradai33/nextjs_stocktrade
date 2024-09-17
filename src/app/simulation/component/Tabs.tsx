@@ -2,6 +2,7 @@ import { SetStateAction, useEffect, useState } from "react";
 
 import { signals, SignalType } from "../../lib/defines";
 import { setHelpText } from "@/app/lib/db";
+import { ipAddress } from "../../lib/defines";
 
 export default function Page(props: {
     activeTab: SignalType;
@@ -11,7 +12,7 @@ export default function Page(props: {
     const submitGethelp = async (signal: SignalType) => {
         try {
             props.setActiveTab(signal);
-            const response = await fetch("http://192.168.0.105:3000/api/gethelp", {
+            const response = await fetch("http://" + ipAddress + ":3000/api/gethelp", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",

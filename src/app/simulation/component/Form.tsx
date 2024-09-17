@@ -1,4 +1,5 @@
 import {FormEvent, useState} from "react";
+import { ipAddress } from "@/app/lib/defines";
 
 export default function Page(){
     const [isFormVisible, setIsFormVisible] = useState(false);
@@ -8,7 +9,7 @@ export default function Page(){
         e.preventDefault();
         if (window.confirm("メッセージを送信しますか？")) {
             try {
-                const response = await fetch("http://192.168.0.105:3000/api/form", {
+                const response = await fetch("http://" + ipAddress + ":3000/api/form", {
                     method: "POST",
                     headers: {
                         Accept: "application/json",

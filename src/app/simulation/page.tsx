@@ -32,7 +32,7 @@ export default function Page() {
 
             <div className="p-8">
                 {/* Title */}
-                <h1 className="text-4xl font-bold text-center mb-8">シミュレーター</h1>
+                <h1 className="text-4xl font-bold text-center mb-8">株トレードシミュレーター</h1>
 
                 {/* Tabs */}
                 <Tabs activeTab={activeTab} setActiveTab={setActiveTab} setHelpMessage={setHelpMessage}/>

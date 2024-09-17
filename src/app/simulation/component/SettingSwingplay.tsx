@@ -21,6 +21,7 @@ export default function Page(props: {
     return (
         <>
             {/* TradeType Option */}
+            
             <Option
                 id={"tradeType"}
                 name={"取引タイプ"}

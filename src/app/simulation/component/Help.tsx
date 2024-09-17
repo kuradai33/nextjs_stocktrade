@@ -1,6 +1,7 @@
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 
 import { SignalType } from "../../lib/defines";
+import { ipAddress } from "../../lib/defines";
 
 export default function Page(props: {
     activeTab: SignalType;
@@ -11,7 +12,7 @@ export default function Page(props: {
 
     const submitSethelp = async () => {
         try {
-            const response = await fetch("http://192.168.0.105:3000/api/sethelp", {
+            const response = await fetch("http://" + ipAddress + ":3000/api/sethelp", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
