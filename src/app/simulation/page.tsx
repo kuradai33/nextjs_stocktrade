@@ -5,7 +5,7 @@ import { useState, useRef } from "react";
 import Form from "./component/Form";
 import Tabs from "./component/Tabs";
 import Setting from "./component/Setting";
-import Result from "./component/Result"
+import Result from "./component/Results/Result";
 import { SignalType } from "../lib/defines";
 
 export default function Page() {
@@ -21,7 +21,9 @@ export default function Page() {
     const [totalLoss, setTotalLoss] = useState("");
     const [cntGain, setCntGain] = useState("");
     const [cntLoss, setCntLoss] = useState("");
-    const [details, setDetails] = useState<{startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string}[]>([]);
+    const [details, setDetails] = useState<
+        { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[]
+    >([]);
 
     const resultRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +37,11 @@ export default function Page() {
                 <h1 className="text-4xl font-bold text-center mb-8">株トレードシミュレーター</h1>
 
                 {/* Tabs */}
-                <Tabs activeTab={activeTab} setActiveTab={setActiveTab} setHelpMessage={setHelpMessage}/>
+                <Tabs
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    setHelpMessage={setHelpMessage}
+                />
 
                 {/* Setting */}
                 <Setting
@@ -61,7 +67,9 @@ export default function Page() {
 
             {/* Simulation Result */}
             {resultVisible && (
-                <Result resultRef={resultRef} results={{
+                <Result
+                    resultRef={resultRef}
+                    results={{
                         activeTab: activeTab,
                         stockSymbol: stockSymbol,
                         stockName: stockName,
@@ -71,7 +79,8 @@ export default function Page() {
                         cntGain: cntGain,
                         cntLoss: cntLoss,
                         details: details,
-                    }} />
+                    }}
+                />
             )}
         </div>
     );

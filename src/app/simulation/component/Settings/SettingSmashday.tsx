@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useState } from "react";
 
-import Option from "./Option";
+import Option from "../Option";
 
 export default function Page(props: {
     tradeType: string;

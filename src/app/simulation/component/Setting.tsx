@@ -1,13 +1,13 @@
 import { ChangeEvent, Dispatch, FormEvent, RefObject, SetStateAction, useState } from "react";
 
-import SettingSmashday from "./SettingSmashday";
-import SettingInsideday from "./SettingInsideday";
-import SettingSwingplay from "./SettingSwingplay";
+import SettingSmashday from "./Settings/SettingSmashday";
+import SettingInsideday from "./Settings/SettingInsideday";
+import SettingSwingplay from "./Settings/SettingSwingplay";
 import { settingSets } from "../../lib/interfaces";
 import { SignalType, ipAddress } from "../../lib/defines";
 import Help from "./Help";
 
-export default function Page(props: {
+type Props = {
     activeTab: SignalType;
     stockSymbol: string;
     setStockSymbol: Dispatch<SetStateAction<string>>;
@@ -17,7 +17,9 @@ export default function Page(props: {
     setHelpMessage: Dispatch<SetStateAction<string>>;
     resultRef: RefObject<HTMLDivElement>;
     sets: settingSets;
-}) {
+};
+
+export default function Page(props: Props) {
     const [startDate, setStartDate] = useState("2019-01-01");
     const [endDate, setEndDate] = useState("2024-01-01");
     const [tradeType, setTradeType] = useState("buy");
@@ -29,6 +31,8 @@ export default function Page(props: {
     const [spanEMAShortSwingplay, setSpanEMAShortSwingplay] = useState(8);
     const [spanEMALongSwingplay, setSpanEMALongSwingplay] = useState(21);
     const [closingPeriod, setClosingPeriod] = useState(10);
+
+    const [modeHeatmap, setModeHeatmap] = useState(false);
 
     const submitSymbolName = async (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
@@ -178,6 +182,7 @@ export default function Page(props: {
                             useEMA={useEMA}
                             spanEMAShort={spanEMAShort}
                             spanEMALong={spanEMALong}
+                            modeHeatmap={modeHeatmap}
                             setTradeType={setTradeType}
                             setClosingPeriod={setClosingPeriod}
                             setSpanEMAShortSwingplay={setSpanEMAShortSwingplay}
@@ -185,6 +190,7 @@ export default function Page(props: {
                             setUseEMA={setUseEMA}
                             setSpanEMAShort={setSpanEMAShort}
                             setSpanEMALong={setSpanEMALong}
+                            setModeHeatmap={setModeHeatmap}
                         />
                     )}
 

@@ -1,33 +1,50 @@
 import { Dispatch, SetStateAction } from "react";
 
-import Option from "./Option";
+import Option from "../Option";
 
-export default function Page(props: {
+type Props = {
     tradeType: string;
-    closingPeriod: number;
-    spanEMAShortSwingplay: number;
-    spanEMALongSwingplay: number;
-    useEMA: boolean;
-    spanEMAShort: number;
-    spanEMALong: number;
     setTradeType: Dispatch<SetStateAction<string>>;
+    closingPeriod: number;
     setClosingPeriod: Dispatch<SetStateAction<number>>;
+    spanEMAShortSwingplay: number;
     setSpanEMAShortSwingplay: Dispatch<SetStateAction<number>>;
+    spanEMALongSwingplay: number;
     setSpanEMALongSwingplay: Dispatch<SetStateAction<number>>;
+    useEMA: boolean;
     setUseEMA: Dispatch<SetStateAction<boolean>>;
+    spanEMAShort: number;
     setSpanEMAShort: Dispatch<SetStateAction<number>>;
+    spanEMALong: number;
     setSpanEMALong: Dispatch<SetStateAction<number>>;
-}) {
+};
+
+export default function Page(props: Props) {
+    const {
+        tradeType,
+        setTradeType,
+        closingPeriod,
+        setClosingPeriod,
+        spanEMAShortSwingplay,
+        setSpanEMAShortSwingplay,
+        spanEMALongSwingplay,
+        setSpanEMALongSwingplay,
+        useEMA,
+        setUseEMA,
+        spanEMAShort,
+        setSpanEMAShort,
+        spanEMALong,
+        setSpanEMALong,
+    } = props;
+
     return (
         <>
-            {/* TradeType Option */}
-            
             <Option
                 id={"tradeType"}
                 name={"取引タイプ"}
                 type={"pulldown"}
-                var={props.tradeType}
-                setVar={props.setTradeType}
+                var={tradeType}
+                setVar={setTradeType}
                 select={[
                     { id: "buy", name: "買い" },
                     { id: "sell", name: "売り" },
@@ -39,44 +56,46 @@ export default function Page(props: {
                 id={"clogingPeriod"}
                 name={"手仕舞い期間"}
                 type={"number"}
-                var={props.closingPeriod}
-                setVar={props.setClosingPeriod}
+                var={closingPeriod}
+                setVar={setClosingPeriod}
             />
 
-            <Option id="spanHLBand"
-                        name="EMAの短期期間"
-                        type="number"
-                        var={props.spanEMAShortSwingplay}
-                        setVar={props.setSpanEMAShortSwingplay}
-                    />
-            <Option id="spanHLBand"
-                        name="EMAの長期期間"
-                        type="number"
-                        var={props.spanEMALongSwingplay}
-                        setVar={props.setSpanEMALongSwingplay}
-                    />
+            <Option
+                id="spanHLBand"
+                name="EMAの短期期間"
+                type="number"
+                var={spanEMAShortSwingplay}
+                setVar={setSpanEMAShortSwingplay}
+            />
+            <Option
+                id="spanHLBand"
+                name="EMAの長期期間"
+                type="number"
+                var={spanEMALongSwingplay}
+                setVar={setSpanEMALongSwingplay}
+            />
 
             {/* EMA Option */}
             <Option
                 id="useEMA"
                 name={"EMAを使用しますか？"}
                 type={"radio_yn"}
-                var={props.useEMA}
-                setVar={props.setUseEMA}
+                var={useEMA}
+                setVar={setUseEMA}
                 switchele={[
                     {
                         id: "spanHLBand",
                         name: "EMAの短期期間",
                         type: "number",
-                        var: props.spanEMAShort,
-                        setVar: props.setSpanEMAShort,
+                        var: spanEMAShort,
+                        setVar: setSpanEMAShort,
                     },
                     {
                         id: "spanHLBand",
                         name: "EMAの長期期間",
                         type: "number",
-                        var: props.spanEMALong,
-                        setVar: props.setSpanEMALong,
+                        var: spanEMALong,
+                        setVar: setSpanEMALong,
                     },
                 ]}
             />
