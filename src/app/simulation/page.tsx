@@ -12,10 +12,11 @@ export default function Page() {
     const [activeTab, setActiveTab] = useState<SignalType>("smashday");
     const [stockSymbol, setStockSymbol] = useState<string>("7203");
     const [stockName, setStockName] = useState("トヨタ自動車");
+    const [modeHeatmap, setModeHeatmap] = useState(false);
 
     const [helpMessage, setHelpMessage] = useState("");
 
-    const [resultVisible, setResultVisible] = useState(false);
+    const [resultVisible, setResultVisible] = useState(true);
     const [totalProfit, setTotalProfit] = useState("");
     const [totalGain, setTotalGain] = useState("");
     const [totalLoss, setTotalLoss] = useState("");
@@ -24,6 +25,10 @@ export default function Page() {
     const [details, setDetails] = useState<
         { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[]
     >([]);
+
+    const [heatmapShort, setHeatmapShort] = useState<string[]>([]);
+    const [heatmapLong, setHeatmapLong] = useState<string[]>([]);
+    const [heatmapData, setHeatmapData] = useState<number[][]>([]);
 
     const resultRef = useRef<HTMLDivElement>(null);
 
@@ -50,6 +55,8 @@ export default function Page() {
                     setStockSymbol={setStockSymbol}
                     stockName={stockName}
                     setStockName={setStockName}
+                    modeHeatmap={modeHeatmap}
+                    setModeHeatmap={setModeHeatmap}
                     helpMessage={helpMessage}
                     setHelpMessage={setHelpMessage}
                     resultRef={resultRef}
@@ -62,6 +69,9 @@ export default function Page() {
                         setDetails: setDetails,
                         setResultVisible: setResultVisible,
                     }}
+                    setHeatmapShort={setHeatmapShort}
+                    setHeatmapLong={setHeatmapLong}
+                    setHeatmapData={setHeatmapData}
                 />
             </div>
 
@@ -73,12 +83,16 @@ export default function Page() {
                         activeTab: activeTab,
                         stockSymbol: stockSymbol,
                         stockName: stockName,
+                        modeHeatmap: modeHeatmap,
                         totalProfit: totalProfit,
                         totalGain: totalGain,
                         totalLoss: totalLoss,
                         cntGain: cntGain,
                         cntLoss: cntLoss,
                         details: details,
+                        heatmapShort: heatmapShort,
+                        heatmapLong: heatmapLong,
+                        heatmapData: heatmapData,
                     }}
                 />
             )}

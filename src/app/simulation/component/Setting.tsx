@@ -6,6 +6,7 @@ import SettingSwingplay from "./Settings/SettingSwingplay";
 import { settingSets } from "../../lib/interfaces";
 import { SignalType, ipAddress } from "../../lib/defines";
 import Help from "./Help";
+import { json } from "stream/consumers";
 
 type Props = {
     activeTab: SignalType;
@@ -13,13 +14,36 @@ type Props = {
     setStockSymbol: Dispatch<SetStateAction<string>>;
     stockName: string;
     setStockName: Dispatch<SetStateAction<string>>;
+    modeHeatmap: boolean;
+    setModeHeatmap: Dispatch<SetStateAction<boolean>>;
+    sets: settingSets;
+    setHeatmapShort: Dispatch<SetStateAction<string[]>>;
+    setHeatmapLong: Dispatch<SetStateAction<string[]>>;
+    setHeatmapData: Dispatch<SetStateAction<number[][]>>;
     helpMessage: string;
     setHelpMessage: Dispatch<SetStateAction<string>>;
     resultRef: RefObject<HTMLDivElement>;
-    sets: settingSets;
 };
 
 export default function Page(props: Props) {
+    const {
+        activeTab,
+        stockSymbol,
+        setStockSymbol,
+        stockName,
+        setStockName,
+        modeHeatmap,
+        setModeHeatmap,
+        helpMessage,
+        setHelpMessage,
+        resultRef,
+        sets,
+        setHeatmapShort,
+        setHeatmapLong,
+        setHeatmapData,
+    } = props;
+
+    // common
     const [startDate, setStartDate] = useState("2019-01-01");
     const [endDate, setEndDate] = useState("2024-01-01");
     const [tradeType, setTradeType] = useState("buy");
@@ -28,16 +52,23 @@ export default function Page(props: Props) {
     const [useEMA, setUseEMA] = useState(false);
     const [spanEMAShort, setSpanEMAShort] = useState(13);
     const [spanEMALong, setSpanEMALong] = useState(26);
+
+    // swingplay
     const [spanEMAShortSwingplay, setSpanEMAShortSwingplay] = useState(8);
     const [spanEMALongSwingplay, setSpanEMALongSwingplay] = useState(21);
     const [closingPeriod, setClosingPeriod] = useState(10);
 
-    const [modeHeatmap, setModeHeatmap] = useState(false);
+    // swingplay heatmap
+    const [spanEMAShortStartSwingplay, setSpanEMAShortStartSwingplay] = useState(6);
+    const [spanEMAShortEndSwingplay, setSpanEMAShortEndSwingplay] = useState(12);
+    const [spanEMALongStartSwingplay, setSpanEMALongStartSwingplay] = useState(15);
+    const [spanEMALongEndSwingplay, setSpanEMALongEndSwingplay] = useState(25);
+
 
     const submitSymbolName = async (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         try {
-            props.setStockSymbol(e.target.value);
+            setStockSymbol(e.target.value);
             const response = await fetch("http://" + ipAddress + ":3000/api/symbolname", {
                 method: "POST",
                 headers: {
@@ -49,7 +80,7 @@ export default function Page(props: Props) {
                 }),
             });
             const stockName = (await response.json()).stockName;
-            props.setStockName(stockName);
+            setStockName(stockName);
         } catch (err) {
             alert("メッセージの送信が失敗しました");
         }
@@ -65,8 +96,8 @@ export default function Page(props: Props) {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    mode: props.activeTab,
-                    symbol: props.stockSymbol,
+                    mode: activeTab,
+                    symbol: stockSymbol,
                     start: startDate,
                     end: endDate,
                     tradeType: tradeType,
@@ -74,20 +105,54 @@ export default function Page(props: Props) {
                     EMAShort: useEMA ? spanEMAShort : null,
                     EMALong: useEMA ? spanEMALong : null,
                     EMAShortswingplay:
-                        props.activeTab == "swingplay" ? spanEMAShortSwingplay : null,
-                    EMALongswingplay: props.activeTab == "swingplay" ? spanEMALongSwingplay : null,
+                        activeTab == "swingplay" ? spanEMAShortSwingplay : null,
+                    EMALongswingplay: activeTab == "swingplay" ? spanEMALongSwingplay : null,
                     closingPeriod: closingPeriod,
                 }),
             });
             const jsonData = await response.json();
-            props.sets.setTotalProfit(jsonData.total.toFixed(1));
-            props.sets.setTotalGain(jsonData.totalGain.toFixed(1));
-            props.sets.setTotalLoss(jsonData.totalLoss.toFixed(1));
-            props.sets.setCntGain(jsonData.cntGain);
-            props.sets.setCntLoss(jsonData.cntLoss);
-            props.sets.setDetails(jsonData.details);
-            props.sets.setResultVisible(true);
-            props.resultRef.current?.scrollIntoView({ behavior: "smooth" });
+            sets.setTotalProfit(jsonData.total.toFixed(1));
+            sets.setTotalGain(jsonData.totalGain.toFixed(1));
+            sets.setTotalLoss(jsonData.totalLoss.toFixed(1));
+            sets.setCntGain(jsonData.cntGain);
+            sets.setCntLoss(jsonData.cntLoss);
+            sets.setDetails(jsonData.details);
+            sets.setResultVisible(true);
+            resultRef.current?.scrollIntoView({ behavior: "smooth" });
+        } catch (err) {
+            alert("メッセージの送信が失敗しました");
+        }
+    };
+
+    const submitSimulationHeatmap = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        try {
+            const response = await fetch("http://" + ipAddress + ":3000/api/heatmap", {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    mode: activeTab,
+                    symbol: stockSymbol,
+                    start: startDate,
+                    end: endDate,
+                    tradeType: tradeType,
+                    closingPeriod: closingPeriod,
+                    EMAShortStartSwingplay: spanEMAShortStartSwingplay,
+                    EMAShortEndSwingplay: spanEMAShortEndSwingplay,
+                    EMALongStartSwingplay: spanEMALongStartSwingplay,
+                    EMALongEndSwingplay: spanEMALongEndSwingplay,
+                }),
+            });
+            const jsonData = await response.json();
+            setHeatmapData(jsonData.datas);
+            console.log(jsonData.datas);
+            setHeatmapShort(jsonData.shorts);
+            setHeatmapLong(jsonData.longs);
+            sets.setResultVisible(true);
+            resultRef.current?.scrollIntoView({ behavior: "smooth" });
         } catch (err) {
             alert("メッセージの送信が失敗しました");
         }
@@ -96,13 +161,13 @@ export default function Page(props: Props) {
     return (
         <>
             <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg mb-8">
-                <form onSubmit={submitSimulation}>
+                <form onSubmit={modeHeatmap ? submitSimulationHeatmap : submitSimulation}>
                     <div className="mb-4 relative">
                         {/* Help */}
                         <Help
-                            activeTab={props.activeTab}
-                            helpMessage={props.helpMessage}
-                            setHelpMessage={props.setHelpMessage}
+                            activeTab={activeTab}
+                            helpMessage={helpMessage}
+                            setHelpMessage={setHelpMessage}
                         />
 
                         {/* Option */}
@@ -113,7 +178,7 @@ export default function Page(props: Props) {
                             <input
                                 type="text"
                                 id="stockSymbol"
-                                value={props.stockSymbol}
+                                value={stockSymbol}
                                 onChange={submitSymbolName}
                                 className="w-1/2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 placeholder="銘柄シンボルを入力"
@@ -123,7 +188,7 @@ export default function Page(props: Props) {
                                 htmlFor="stockSymbol"
                                 className="w-1/2 px-4 py-2 block text-gray-700 font-medium"
                             >
-                                - {props.stockName}
+                                - {stockName}
                             </label>
                         </div>
                     </div>
@@ -156,7 +221,7 @@ export default function Page(props: Props) {
                         />
                     </div>
 
-                    {props.activeTab === "smashday" && (
+                    {activeTab === "smashday" && (
                         <SettingSmashday
                             tradeType={tradeType}
                             useHLBand={useHLBand}
@@ -172,25 +237,33 @@ export default function Page(props: Props) {
                             setSpanEMALong={setSpanEMALong}
                         />
                     )}
-                    {props.activeTab === "insideday" && <SettingInsideday />}
-                    {props.activeTab === "swingplay" && (
+                    {activeTab === "insideday" && <SettingInsideday />}
+                    {activeTab === "swingplay" && (
                         <SettingSwingplay
                             tradeType={tradeType}
-                            closingPeriod={closingPeriod}
-                            spanEMAShortSwingplay={spanEMAShortSwingplay}
-                            spanEMALongSwingplay={spanEMALongSwingplay}
-                            useEMA={useEMA}
-                            spanEMAShort={spanEMAShort}
-                            spanEMALong={spanEMALong}
-                            modeHeatmap={modeHeatmap}
                             setTradeType={setTradeType}
+                            closingPeriod={closingPeriod}
                             setClosingPeriod={setClosingPeriod}
+                            spanEMAShortSwingplay={spanEMAShortSwingplay}
                             setSpanEMAShortSwingplay={setSpanEMAShortSwingplay}
+                            spanEMALongSwingplay={spanEMALongSwingplay}
                             setSpanEMALongSwingplay={setSpanEMALongSwingplay}
+                            useEMA={useEMA}
                             setUseEMA={setUseEMA}
+                            spanEMAShort={spanEMAShort}
                             setSpanEMAShort={setSpanEMAShort}
+                            spanEMALong={spanEMALong}
                             setSpanEMALong={setSpanEMALong}
+                            modeHeatmap={modeHeatmap}
                             setModeHeatmap={setModeHeatmap}
+                            spanEMAShortStartSwingplay={spanEMAShortStartSwingplay}
+                            setSpanEMAShortStartSwingplay={setSpanEMAShortStartSwingplay}
+                            spanEMAShortEndSwingplay={spanEMAShortEndSwingplay}
+                            setSpanEMAShortEndSwingplay={setSpanEMAShortEndSwingplay}
+                            spanEMALongStartSwingplay={spanEMALongStartSwingplay}
+                            setSpanEMALongStartSwingplay={setSpanEMALongStartSwingplay}
+                            spanEMALongEndSwingplay={spanEMALongEndSwingplay}
+                            setSpanEMALongEndSwingplay={setSpanEMALongEndSwingplay}
                         />
                     )}
 

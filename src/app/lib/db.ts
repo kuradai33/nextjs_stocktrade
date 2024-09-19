@@ -551,3 +551,8 @@ function convertDate_num(date: string) {
         1
     );
 }
+
+export function roundByDigit(value: number, digit: number) {
+    const multiplier = Math.pow(10, digit);
+    return Math.round(value * multiplier) / multiplier;
+}

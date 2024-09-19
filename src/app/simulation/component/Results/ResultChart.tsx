@@ -1,6 +1,5 @@
 import { SetStateAction, useState } from "react";
 import ReactECharts from "echarts-for-react";
-import { Autour_One } from "next/font/google";
 
 export default function Page(props: {
     chartData: {

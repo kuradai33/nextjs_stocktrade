@@ -40,7 +40,7 @@ export default function Page(props: Props) {
     return (
         <>
             <Option
-                id={"tradeType"}
+                id="tradeType"
                 name={"取引タイプ"}
                 type={"pulldown"}
                 var={tradeType}
@@ -53,7 +53,7 @@ export default function Page(props: Props) {
             />
 
             <Option
-                id={"clogingPeriod"}
+                id="clogingPeriod"
                 name={"手仕舞い期間"}
                 type={"number"}
                 var={closingPeriod}
@@ -61,14 +61,14 @@ export default function Page(props: Props) {
             />
 
             <Option
-                id="spanHLBand"
+                id="baseEmaShort"
                 name="EMAの短期期間"
                 type="number"
                 var={spanEMAShortSwingplay}
                 setVar={setSpanEMAShortSwingplay}
             />
             <Option
-                id="spanHLBand"
+                id="baseEmaLong"
                 name="EMAの長期期間"
                 type="number"
                 var={spanEMALongSwingplay}
@@ -84,14 +84,14 @@ export default function Page(props: Props) {
                 setVar={setUseEMA}
                 switchele={[
                     {
-                        id: "spanHLBand",
+                        id: "emaShort",
                         name: "EMAの短期期間",
                         type: "number",
                         var: spanEMAShort,
                         setVar: setSpanEMAShort,
                     },
                     {
-                        id: "spanHLBand",
+                        id: "emaLong",
                         name: "EMAの長期期間",
                         type: "number",
                         var: spanEMALong,

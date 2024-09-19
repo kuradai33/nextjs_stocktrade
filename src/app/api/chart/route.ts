@@ -1,13 +1,8 @@
 import { NextRequest } from "next/server";
-import { getStockData, addIndicator } from "@/app/lib/db";
+import { getStockData, addIndicator, roundByDigit } from "@/app/lib/db";
 
 export async function POST(request: NextRequest) {
     const body = await request.json();
-
-    function roundByDigit(value: number, digit: number) {
-        const multiplier = Math.pow(10, digit);
-        return Math.round(value * multiplier) / multiplier;
-    }
 
     const rawStockData = addIndicator(
         await getStockData({ symbol: body.symbol, start: body.start, end: body.end, extradate: 5 }),
