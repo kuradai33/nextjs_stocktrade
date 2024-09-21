@@ -1,4 +1,5 @@
 import ReactECharts from "echarts-for-react";
+import { TopLevelFormatterParams } from "echarts/types/dist/shared";
 
 export default function Page(props: {
     heatmapShort: string[];
@@ -28,6 +29,19 @@ export default function Page(props: {
     options = {
         tooltip: {
             position: "top",
+            formatter: (params: TopLevelFormatterParams) => {
+                if(!Array.isArray(params)){
+                    const circle = "<span style='display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:" + params.color + ";'></span>";
+                    let number = -1, emashort = "", emalong = "";
+                    if(Array.isArray(params.value)){
+                        if(typeof(params.value[2]) == "number") number = params.value[2];
+                        if(typeof(params.value[1]) == "number") emashort = heatmapShort[params.value[1]];
+                        if(typeof(params.value[0]) == "number") emalong = heatmapLong[params.value[0]];
+                    }
+                    return circle + " " + number + "<br>EMA Short: " + emashort + "<br>EMA Long: " + emalong;
+                }
+                return "";
+            },
         },
         grid: {
             height: "50%",
@@ -35,6 +49,7 @@ export default function Page(props: {
         },
         xAxis: {
             type: "category",
+            name: "EMA long",
             data: heatmapLong,
             splitArea: {
                 show: true,
@@ -42,6 +57,7 @@ export default function Page(props: {
         },
         yAxis: {
             type: "category",
+            name: "EMA short",
             data: heatmapShort,
             splitArea: {
                 show: true,
@@ -54,6 +70,9 @@ export default function Page(props: {
             orient: "horizontal",
             left: "center",
             bottom: "15%",
+            inRange: {
+                color: ["#FF0000", "#FFFF00", "#32CD32"],
+            },
         },
         series: [
             {
@@ -74,7 +93,7 @@ export default function Page(props: {
     };
     return (
         <>
-            <ReactECharts option={options} />
+            <ReactECharts option={options} style={{height: "90vh"}}/>
         </>
     );
 }
