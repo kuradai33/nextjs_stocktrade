@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { SimulateSwingplay, roundByDigit } from "@/app/lib/db";
+import { simulateSwingplay, roundByDigit } from "@/app/lib/db";
 import { SignalType } from "@/app/lib/defines";
 
 type Body = {
@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
         EMALongEndSwingplay,
     } = body;
 
-    let results: number[][] = [], shorts: string[] = [], longs: string[] = [];
+    let results: number[][] = [],
+        shorts: string[] = [],
+        longs: string[] = [];
     for (let i = EMAShortStartSwingplay; i <= EMAShortEndSwingplay; i++) {
         shorts.push(String(i));
     }
@@ -40,18 +42,24 @@ export async function POST(request: NextRequest) {
     }
     for (let i = EMAShortStartSwingplay; i <= EMAShortEndSwingplay; i++) {
         for (let j = EMALongStartSwingplay; j <= EMALongEndSwingplay; j++) {
-            const resultProfit = (await SimulateSwingplay({
-                symbol: symbol,
-                start: start,
-                end: end,
-                tradeType: tradeType,
-                closingPeriod: closingPeriod,
-                EMA: { short: i, long: j },
-            })).sumAll;
-            results.push([i - EMAShortStartSwingplay, j - EMALongStartSwingplay, roundByDigit(resultProfit, 2)]);
+            const resultProfit = (
+                await simulateSwingplay({
+                    symbol: symbol,
+                    start: start,
+                    end: end,
+                    tradeType: tradeType,
+                    closingPeriod: closingPeriod,
+                    EMA: { short: i, long: j },
+                })
+            ).sumAll;
+            results.push([
+                i - EMAShortStartSwingplay,
+                j - EMALongStartSwingplay,
+                roundByDigit(resultProfit, 2),
+            ]);
         }
     }
 
     // 二次元number配列のみを返す
-    return new Response(JSON.stringify({shorts: shorts, longs: longs, datas: results}));
+    return new Response(JSON.stringify({ shorts: shorts, longs: longs, datas: results }));
 }

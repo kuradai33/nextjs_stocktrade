@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { SimulateSmashday, SimulateSwingplay } from "@/app/lib/db";
+import { simulateSmashday, simulateSwingplay } from "@/app/lib/db";
 
 export async function POST(request: NextRequest) {
     const body = await request.json();
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         details: [{ startDate: "", endDate: "", tradeType: "", outcome: "", amount: "" }],
     };
     if (body.mode == "smashday")
-        result = await SimulateSmashday({
+        result = await simulateSmashday({
             symbol: body.symbol,
             start: body.start,
             end: body.end,
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
             EMA: { short: body.EMAShort, long: body.EMALong },
         });
     else if (body.mode == "swingplay")
-        result = await SimulateSwingplay({
+        result = await simulateSwingplay({
             symbol: body.symbol,
             start: body.start,
             end: body.end,

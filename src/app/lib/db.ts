@@ -49,8 +49,8 @@ export async function getStockData(param: {
         where: {
             AND: [
                 { stock_id: symbol_id },
-                { date_num: { gte: convertDate_num(param.start) } },
-                { date_num: { lte: convertDate_num(param.end) } },
+                { date_num: { gte: convertDateNum(param.start) } },
+                { date_num: { lte: convertDateNum(param.end) } },
             ],
         },
         select: {
@@ -65,7 +65,7 @@ export async function getStockData(param: {
     const rawPrePrices = (
         await prisma.stockprices.findMany({
             where: {
-                AND: [{ stock_id: symbol_id }, { date_num: { lte: convertDate_num(param.start) } }],
+                AND: [{ stock_id: symbol_id }, { date_num: { lte: convertDateNum(param.start) } }],
             },
             orderBy: {
                 date: "desc",
@@ -92,7 +92,7 @@ export async function getStockData(param: {
     });
     const rawPostPrices = await prisma.stockprices.findMany({
         where: {
-            AND: [{ stock_id: symbol_id }, { date_num: { gte: convertDate_num(param.end) } }],
+            AND: [{ stock_id: symbol_id }, { date_num: { gte: convertDateNum(param.end) } }],
         },
         orderBy: {
             date: "asc",
@@ -200,7 +200,7 @@ export function addIndicator(
     return result;
 }
 
-export async function SimulateSmashday(param: {
+export async function simulateSmashday(param: {
     symbol: string;
     start: string;
     end: string;
@@ -213,8 +213,8 @@ export async function SimulateSmashday(param: {
         where: {
             AND: [
                 { stock_id: symbol_id },
-                { date_num: { gte: convertDate_num(param.start) } },
-                { date_num: { lte: convertDate_num(param.end) } },
+                { date_num: { gte: convertDateNum(param.start) } },
+                { date_num: { lte: convertDateNum(param.end) } },
             ],
         },
         select: {
@@ -378,7 +378,7 @@ export async function SimulateSmashday(param: {
     return result;
 }
 
-export async function SimulateSwingplay(param: {
+export async function simulateSwingplay(param: {
     symbol: string;
     start: string;
     end: string;
@@ -392,8 +392,8 @@ export async function SimulateSwingplay(param: {
         where: {
             AND: [
                 { stock_id: symbol_id },
-                { date_num: { gte: convertDate_num(param.start) } },
-                { date_num: { lte: convertDate_num(param.end) } },
+                { date_num: { gte: convertDateNum(param.start) } },
+                { date_num: { lte: convertDateNum(param.end) } },
             ],
         },
         select: {
@@ -441,8 +441,7 @@ export async function SimulateSwingplay(param: {
                 if (!over4per && prices[i].low < tradePrice * 0.96) {
                     amount = tradePrice * 0.96 - tradePrice;
                     outcome = "損切(4%前)";
-                }
-                else if(over4per && emalong && prices[i].low < emalong){
+                } else if (over4per && emalong && prices[i].low < emalong) {
                     amount = emalong - tradePrice;
                     outcome = "損切(4%後)";
                 }
@@ -455,21 +454,18 @@ export async function SimulateSwingplay(param: {
                 else if (prices[i].high > tradePrice * 1.08) {
                     amount = tradePrice * 1.08 - tradePrice;
                     outcome = "利益";
-                }
-                else {
+                } else {
                     tradePeriod++;
-                    if(!over4per && prices[i].high > tradePrice * 1.04) over4per = true;
+                    if (!over4per && prices[i].high > tradePrice * 1.04) over4per = true;
                     continue;
                 }
-            }
-            else if ((tradeType = "Sell")) {
+            } else if ((tradeType = "Sell")) {
                 const emalong = prices[i - 1].emalong;
                 // Loss
                 if (!over4per && prices[i].high > tradePrice * 1.04) {
                     amount = tradePrice - tradePrice * 1.04;
                     outcome = "損切(4%前)";
-                }
-                else if(over4per && emalong && prices[i].high > emalong){
+                } else if (over4per && emalong && prices[i].high > emalong) {
                     amount = tradePrice - emalong;
                     outcome = "損切(4%後)";
                 }
@@ -482,32 +478,32 @@ export async function SimulateSwingplay(param: {
                 else if (prices[i].low < tradePrice * 0.92) {
                     amount = tradePrice - tradePrice * 0.92;
                     outcome = "利益";
-                }
-                else {
+                } else {
                     tradePeriod++;
-                    if(!over4per && prices[i].low < tradePrice * 0.96) over4per = true;
+                    if (!over4per && prices[i].low < tradePrice * 0.96) over4per = true;
                     continue;
                 }
             }
             result.sumAll += amount;
             result.sumGain += Math.max(amount, 0);
             result.sumLoss += Math.min(amount, 0);
-            if(amount >= 0) result.cntGain++;
+            if (amount >= 0) result.cntGain++;
             else result.cntLoss++;
-            
+
             result.details.push({
                 startDate: startDate,
                 endDate: prices[i].date,
                 tradeType: tradeType,
                 outcome: outcome,
-                amount: (amount >= 0 ? amount.toFixed(1) : "▲" + (-amount).toFixed(1)),
+                amount: amount >= 0 ? amount.toFixed(1) : "▲" + (-amount).toFixed(1),
             });
             tradeType = "";
         } else {
             if (useBuy) {
                 let signalBuy = false;
-                const emashort = prices[i - 1].emashort, emalong = prices[i - 1].emalong;
-                if(emashort && emalong){
+                const emashort = prices[i - 1].emashort,
+                    emalong = prices[i - 1].emalong;
+                if (emashort && emalong) {
                     signalBuy = emashort > emalong && emashort < prices[i].high;
                 }
 
@@ -522,8 +518,9 @@ export async function SimulateSwingplay(param: {
             }
             if (useSell) {
                 let signalSell = false;
-                const emashort = prices[i - 1].emashort, emalong = prices[i - 1].emalong;
-                if(emashort && emalong){
+                const emashort = prices[i - 1].emashort,
+                    emalong = prices[i - 1].emalong;
+                if (emashort && emalong) {
                     signalSell = emashort < emalong && emashort > prices[i].low;
                 }
 
@@ -542,7 +539,7 @@ export async function SimulateSwingplay(param: {
     return result;
 }
 
-function convertDate_num(date: string) {
+function convertDateNum(date: string) {
     const devided_date = date.split("-");
     return (
         (Number(devided_date[0]) - 2000) * 366 +
