@@ -5,47 +5,43 @@ import ResultChart from "./ResultChart";
 import ResultHeatmap from "./ResultHeatmap";
 import { SignalType } from "@/app/lib/defines";
 
-export default function Page(props: {
+type Props = {
     resultRef: RefObject<HTMLDivElement>;
-    results: {
+    result: {
         activeTab: SignalType;
         stockSymbol: string;
         stockName: string;
         modeHeatmap: boolean;
-        totalProfit: string;
-        totalGain: string;
-        totalLoss: string;
-        cntGain: string;
-        cntLoss: string;
-        details: { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[];
-        heatmapShort: string[];
-        heatmapLong: string[];
-        heatmapData: number[][];
+        resultData: {
+            totalProfit: string;
+            totalGain: string;
+            totalLoss: string;
+            cntGain: string;
+            cntLoss: string;
+            details: {
+                startDate: string;
+                endDate: string;
+                outcome: "Gain" | "Loss";
+                amount: string;
+            }[];
+        };
+        resultHeatmap: {
+            dataHeatmap: number[][];
+            shortHeatmap: string[];
+            longHeatmap: string[];
+        };
     };
-}) {
-    const {
-        activeTab,
-        stockSymbol,
-        stockName,
-        modeHeatmap,
-        totalProfit,
-        totalGain,
-        totalLoss,
-        cntGain,
-        cntLoss,
-        details,
-        heatmapShort,
-        heatmapLong,
-        heatmapData,
-    } = props.results;
+};
+
+export default function Page(props: Props) {
+    const { activeTab, stockSymbol, stockName, modeHeatmap, resultData, resultHeatmap } = props.result;
+    const { totalProfit, totalGain, totalLoss, cntGain, cntLoss, details } = resultData;
+    const { dataHeatmap, shortHeatmap, longHeatmap } = resultHeatmap;
 
     const [chartVisible, setChartVisible] = useState(false);
-    const [chartData, setChartData] = useState([
-        { date: "", open: 0, close: 0, high: 0, low: 0, emashort: 0, emalong: 0 },
-    ]);
-    const [chartDate, setChartDate] = useState<string[]>([]);
-    const [chartEMAShort, setChartEMAShort] = useState<number[]>([]);
-    const [chartEMALong, setChartEMALong] = useState<number[]>([]);
+    const [chartDatas, setChartDatas] = useState({chartData: [{ date: "", open: 0, close: 0, high: 0, low: 0, emashort: 0, emalong: 0 }], chartDate: [""], chartEMAShort: [0], chartEMALong: [0]});
+    const {chartData, chartDate, chartEMAShort, chartEMALong} = chartDatas;
+
     const [chartEMAShortSpan, setChartEMAShortSpan] = useState(13);
     const [chartEMALongSpan, setChartEMALongSpan] = useState(26);
 
@@ -59,9 +55,9 @@ export default function Page(props: {
 
                 {modeHeatmap ? (
                     <ResultHeatmap
-                        heatmapShort={heatmapShort}
-                        heatmapLong={heatmapLong}
-                        heatmapData={heatmapData}
+                        heatmapShort={shortHeatmap}
+                        heatmapLong={longHeatmap}
+                        heatmapData={dataHeatmap}
                     />
                 ) : (
                     <>
@@ -90,10 +86,7 @@ export default function Page(props: {
                             <ResultDetail
                                 stockSymbol={stockSymbol}
                                 details={details}
-                                setChartData={setChartData}
-                                setChartDate={setChartDate}
-                                setChartEMAShort={setChartEMAShort}
-                                setChartEMALong={setChartEMALong}
+                                setChartDatas={setChartDatas}
                                 chartEMAShortSpan={chartEMAShortSpan}
                                 chartEMALongSpan={chartEMALongSpan}
                                 setChartEMAShortSpan={setChartEMAShortSpan}

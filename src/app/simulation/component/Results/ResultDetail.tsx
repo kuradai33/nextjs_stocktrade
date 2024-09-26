@@ -1,12 +1,14 @@
 import { ipAddress } from "@/app/lib/defines";
 import { Dispatch, SetStateAction } from "react";
 
-export default function Page(props: {
+type Props = {
     stockSymbol: string;
     details: { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[];
-    setChartData: Dispatch<
-        SetStateAction<
-            {
+    chartEMAShortSpan: number;
+    chartEMALongSpan: number;
+    setChartDatas: Dispatch<
+        SetStateAction<{
+            chartData: {
                 date: string;
                 open: number;
                 close: number;
@@ -14,18 +16,26 @@ export default function Page(props: {
                 low: number;
                 emashort: number;
                 emalong: number;
-            }[]
-        >
+            }[];
+            chartDate: string[];
+            chartEMAShort: number[];
+            chartEMALong: number[];
+        }>
     >;
-    chartEMAShortSpan: number;
-    chartEMALongSpan: number;
-    setChartDate: Dispatch<SetStateAction<string[]>>;
-    setChartEMAShort: Dispatch<SetStateAction<number[]>>;
-    setChartEMALong: Dispatch<SetStateAction<number[]>>;
     setChartEMAShortSpan: Dispatch<SetStateAction<number>>;
     setChartEMALongSpan: Dispatch<SetStateAction<number>>;
     setChartVisible: Dispatch<SetStateAction<boolean>>;
-}) {
+};
+
+export default function Page(props: Props) {
+    const {
+        stockSymbol,
+        details,
+        chartEMAShortSpan,
+        chartEMALongSpan,
+        setChartDatas,
+        setChartVisible,
+    } = props;
     const submitChart = async (start: string, end: string) => {
         try {
             const response = await fetch("http://" + ipAddress + ":3000/api/chart", {
@@ -43,11 +53,13 @@ export default function Page(props: {
                 }),
             });
             const jsonData = await response.json();
-            props.setChartData(jsonData.stockData);
-            props.setChartDate(jsonData.stockDate);
-            props.setChartEMAShort(jsonData.stockEMAShort);
-            props.setChartEMALong(jsonData.stockEMALong);
-            props.setChartVisible(true);
+            setChartDatas({
+                chartData: jsonData.stockData,
+                chartDate: jsonData.stockDate,
+                chartEMAShort: jsonData.stockEMAShort,
+                chartEMALong: jsonData.stockEMALong,
+            });
+            setChartVisible(true);
         } catch (err) {
             alert("メッセージの送信が失敗しました");
         }

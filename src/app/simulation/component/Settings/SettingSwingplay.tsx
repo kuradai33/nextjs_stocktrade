@@ -8,20 +8,20 @@ import SettingSwingplayHeatmap from "./SettingSwingplayHeatmap";
 
 export default function Page(props: {
     tradeType: string;
-    closingPeriod: number;
-    spanEMAShortSwingplay: number;
-    spanEMALongSwingplay: number;
-    useEMA: boolean;
-    spanEMAShort: number;
-    spanEMALong: number;
-    modeHeatmap: boolean;
     setTradeType: Dispatch<SetStateAction<string>>;
+    closingPeriod: number;
     setClosingPeriod: Dispatch<SetStateAction<number>>;
+    spanEMAShortSwingplay: number;
     setSpanEMAShortSwingplay: Dispatch<SetStateAction<number>>;
+    spanEMALongSwingplay: number;
     setSpanEMALongSwingplay: Dispatch<SetStateAction<number>>;
+    useEMA: boolean;
     setUseEMA: Dispatch<SetStateAction<boolean>>;
+    spanEMAShort: number;
     setSpanEMAShort: Dispatch<SetStateAction<number>>;
+    spanEMALong: number;
     setSpanEMALong: Dispatch<SetStateAction<number>>;
+    modeHeatmap: boolean;
     setModeHeatmap: Dispatch<SetStateAction<boolean>>;
     spanEMAShortStartSwingplay: number;
     setSpanEMAShortStartSwingplay: Dispatch<SetStateAction<number>>;

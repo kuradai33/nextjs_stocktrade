@@ -17,18 +17,16 @@ export default function Page() {
     const [helpMessage, setHelpMessage] = useState("");
 
     const [resultVisible, setResultVisible] = useState(true);
-    const [totalProfit, setTotalProfit] = useState("");
-    const [totalGain, setTotalGain] = useState("");
-    const [totalLoss, setTotalLoss] = useState("");
-    const [cntGain, setCntGain] = useState("");
-    const [cntLoss, setCntLoss] = useState("");
-    const [details, setDetails] = useState<
-        { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[]
-    >([]);
+    const [result, setResult] = useState<{
+        totalProfit: string;
+        totalGain: string;
+        totalLoss: string;
+        cntGain: string;
+        cntLoss: string;
+        details: { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[];
+    }>({ totalProfit: "", totalGain: "", totalLoss: "", cntGain: "", cntLoss: "", details: [] });
 
-    const [heatmapShort, setHeatmapShort] = useState<string[]>([]);
-    const [heatmapLong, setHeatmapLong] = useState<string[]>([]);
-    const [heatmapData, setHeatmapData] = useState<number[][]>([]);
+    const [resultHeatmap, setResultHeatmap] = useState<{dataHeatmap: number[][], shortHeatmap: string[], longHeatmap: string[]}>({dataHeatmap: [], shortHeatmap: [], longHeatmap: []});
 
     const resultRef = useRef<HTMLDivElement>(null);
 
@@ -60,18 +58,9 @@ export default function Page() {
                     helpMessage={helpMessage}
                     setHelpMessage={setHelpMessage}
                     resultRef={resultRef}
-                    sets={{
-                        setTotalProfit: setTotalProfit,
-                        setTotalGain: setTotalGain,
-                        setTotalLoss: setTotalLoss,
-                        setCntGain: setCntGain,
-                        setCntLoss: setCntLoss,
-                        setDetails: setDetails,
-                        setResultVisible: setResultVisible,
-                    }}
-                    setHeatmapShort={setHeatmapShort}
-                    setHeatmapLong={setHeatmapLong}
-                    setHeatmapData={setHeatmapData}
+                    setResult={setResult}
+                    setResultHeatmap={setResultHeatmap}
+                    setResultVisible={setResultVisible}
                 />
             </div>
 
@@ -79,20 +68,13 @@ export default function Page() {
             {resultVisible && (
                 <Result
                     resultRef={resultRef}
-                    results={{
+                    result={{
                         activeTab: activeTab,
                         stockSymbol: stockSymbol,
                         stockName: stockName,
                         modeHeatmap: modeHeatmap,
-                        totalProfit: totalProfit,
-                        totalGain: totalGain,
-                        totalLoss: totalLoss,
-                        cntGain: cntGain,
-                        cntLoss: cntLoss,
-                        details: details,
-                        heatmapShort: heatmapShort,
-                        heatmapLong: heatmapLong,
-                        heatmapData: heatmapData,
+                        resultData: result,
+                        resultHeatmap: resultHeatmap,
                     }}
                 />
             )}

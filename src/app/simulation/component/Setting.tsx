@@ -16,10 +16,27 @@ type Props = {
     setStockName: Dispatch<SetStateAction<string>>;
     modeHeatmap: boolean;
     setModeHeatmap: Dispatch<SetStateAction<boolean>>;
-    sets: settingSets;
-    setHeatmapShort: Dispatch<SetStateAction<string[]>>;
-    setHeatmapLong: Dispatch<SetStateAction<string[]>>;
-    setHeatmapData: Dispatch<SetStateAction<number[][]>>;
+    setResultVisible: Dispatch<SetStateAction<boolean>>;
+    setResult: Dispatch<
+        SetStateAction<{
+            totalProfit: string;
+            totalGain: string;
+            totalLoss: string;
+            cntGain: string;
+            cntLoss: string;
+            details: {
+                startDate: string;
+                endDate: string;
+                outcome: "Gain" | "Loss";
+                amount: string;
+            }[];
+        }>
+    >;
+    setResultHeatmap: Dispatch<SetStateAction<{
+        dataHeatmap: number[][];
+        shortHeatmap: string[];
+        longHeatmap: string[];
+    }>>;
     helpMessage: string;
     setHelpMessage: Dispatch<SetStateAction<string>>;
     resultRef: RefObject<HTMLDivElement>;
@@ -36,11 +53,10 @@ export default function Page(props: Props) {
         setModeHeatmap,
         helpMessage,
         setHelpMessage,
+        setResultVisible,
+        setResult,
+        setResultHeatmap,
         resultRef,
-        sets,
-        setHeatmapShort,
-        setHeatmapLong,
-        setHeatmapData,
     } = props;
 
     // common
@@ -63,7 +79,6 @@ export default function Page(props: Props) {
     const [spanEMAShortEndSwingplay, setSpanEMAShortEndSwingplay] = useState(12);
     const [spanEMALongStartSwingplay, setSpanEMALongStartSwingplay] = useState(15);
     const [spanEMALongEndSwingplay, setSpanEMALongEndSwingplay] = useState(25);
-
 
     const submitSymbolName = async (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
@@ -104,20 +119,22 @@ export default function Page(props: Props) {
                     HLBand: useHLBand ? spanHLBand : null,
                     EMAShort: useEMA ? spanEMAShort : null,
                     EMALong: useEMA ? spanEMALong : null,
-                    EMAShortswingplay:
-                        activeTab == "swingplay" ? spanEMAShortSwingplay : null,
+                    EMAShortswingplay: activeTab == "swingplay" ? spanEMAShortSwingplay : null,
                     EMALongswingplay: activeTab == "swingplay" ? spanEMALongSwingplay : null,
                     closingPeriod: closingPeriod,
                 }),
             });
             const jsonData = await response.json();
-            sets.setTotalProfit(jsonData.total.toFixed(1));
-            sets.setTotalGain(jsonData.totalGain.toFixed(1));
-            sets.setTotalLoss(jsonData.totalLoss.toFixed(1));
-            sets.setCntGain(jsonData.cntGain);
-            sets.setCntLoss(jsonData.cntLoss);
-            sets.setDetails(jsonData.details);
-            sets.setResultVisible(true);
+            const result = {
+                totalProfit: jsonData.total.toFixed(1),
+                totalGain: jsonData.totalGain.toFixed(1),
+                totalLoss: jsonData.totalLoss.toFixed(1),
+                cntGain: jsonData.cntGain,
+                cntLoss: jsonData.cntLoss,
+                details: jsonData.details,
+            };
+            setResult(result);
+            setResultVisible(true);
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
         } catch (err) {
             alert("メッセージの送信が失敗しました");
@@ -147,11 +164,8 @@ export default function Page(props: Props) {
                 }),
             });
             const jsonData = await response.json();
-            setHeatmapData(jsonData.datas);
-            console.log(jsonData.datas);
-            setHeatmapShort(jsonData.shorts);
-            setHeatmapLong(jsonData.longs);
-            sets.setResultVisible(true);
+            setResultHeatmap({dataHeatmap: jsonData.datas, shortHeatmap: jsonData.shorts, longHeatmap: jsonData.longs});
+            setResultVisible(true);
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
         } catch (err) {
             alert("メッセージの送信が失敗しました");
