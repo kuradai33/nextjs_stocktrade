@@ -104,7 +104,7 @@ export default function Page(props: Props) {
     const submitSimulation = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await fetch("http://" + ipAddress + ":3000/api/post", {
+            const response = await fetch("http://" + ipAddress + "/api/post", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -144,7 +144,7 @@ export default function Page(props: Props) {
     const submitSimulationHeatmap = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await fetch("http://" + ipAddress + ":3000/api/heatmap", {
+            const response = await fetch("http://" + ipAddress + "/api/heatmap", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",

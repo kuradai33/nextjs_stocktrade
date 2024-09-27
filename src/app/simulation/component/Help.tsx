@@ -12,7 +12,7 @@ export default function Page(props: {
 
     const submitSethelp = async () => {
         try {
-            const response = await fetch("http://" + ipAddress + ":3000/api/sethelp", {
+            const response = await fetch("http://" + ipAddress + "/api/sethelp", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",

@@ -38,7 +38,7 @@ export default function Page(props: Props) {
     } = props;
     const submitChart = async (start: string, end: string) => {
         try {
-            const response = await fetch("http://" + ipAddress + ":3000/api/chart", {
+            const response = await fetch("http://" + ipAddress + "/api/chart", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",

@@ -12,7 +12,7 @@ export default function Page(props: {
     const submitGethelp = async (signal: SignalType) => {
         try {
             props.setActiveTab(signal);
-            const response = await fetch("http://" + ipAddress + ":3000/api/gethelp", {
+            const response = await fetch("http://" + ipAddress + "/api/gethelp", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
