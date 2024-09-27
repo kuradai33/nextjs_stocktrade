@@ -9,7 +9,7 @@ import Result from "./component/Results/Result";
 import { SignalType } from "../lib/defines";
 
 export default function Page() {
-    const [activeTab, setActiveTab] = useState<SignalType>("smashday");
+    const [activeTab, setActiveTab] = useState<SignalType>("swingplay");
     const [stockSymbol, setStockSymbol] = useState<string>("7203");
     const [stockName, setStockName] = useState("トヨタ自動車");
     const [modeHeatmap, setModeHeatmap] = useState(false);
@@ -25,6 +25,18 @@ export default function Page() {
         cntLoss: string;
         details: { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[];
     }>({ totalProfit: "", totalGain: "", totalLoss: "", cntGain: "", cntLoss: "", details: [] });
+
+    const [chartDatas, setChartDatas] = useState<{
+        date: string;
+        open: number;
+        close: number;
+        high: number;
+        low: number;
+        hband?: number;
+        lband?: number;
+        emashort?: number;
+        emalong?: number;
+    }[]>([]);
 
     const [resultHeatmap, setResultHeatmap] = useState<{dataHeatmap: number[][], shortHeatmap: string[], longHeatmap: string[]}>({dataHeatmap: [], shortHeatmap: [], longHeatmap: []});
 
@@ -59,6 +71,7 @@ export default function Page() {
                     setHelpMessage={setHelpMessage}
                     resultRef={resultRef}
                     setResult={setResult}
+                    setChartDatas={setChartDatas}
                     setResultHeatmap={setResultHeatmap}
                     setResultVisible={setResultVisible}
                 />
@@ -74,6 +87,7 @@ export default function Page() {
                         stockName: stockName,
                         modeHeatmap: modeHeatmap,
                         resultData: result,
+                        chartDatas: chartDatas,
                         resultHeatmap: resultHeatmap,
                     }}
                 />

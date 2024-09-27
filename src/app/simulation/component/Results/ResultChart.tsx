@@ -1,27 +1,30 @@
 import { SetStateAction, useState } from "react";
 import ReactECharts from "echarts-for-react";
+import { roundByDigit } from "@/app/lib/db";
 
 export default function Page(props: {
-    chartData: {
-        date: string;
-        open: number;
-        close: number;
-        high: number;
-        low: number;
-        emashort: number;
-        emalong: number;
-    }[];
-    chartDate: string[];
-    chartVisible: boolean;
+    chartShowDatas: {
+        chartData: {
+            open: number;
+            close: number;
+            high: number;
+            low: number;
+        }[];
+        chartDate: string[];
+        chartEMAShort: number[];
+        chartEMALong: number[];
+    };
 }) {
+    const { chartData, chartDate, chartEMAShort, chartEMALong } = props.chartShowDatas;
+
     const [chartEMAShortSpan, setChartEMAShortSpan] = useState(13);
     const [chartEMALongSpan, setChartEMALongSpan] = useState(26);
 
     let options = {
-        legend: {
-            data: ["日付", "MA5", "MA10", "MA20", "MA30"],
-            inactiveColor: "#777",
-        },
+        // legend: {
+        //     data: ["日付", "MA5", "MA10", "MA20", "MA30"],
+        //     inactiveColor: "#777",
+        // },
         tooltip: {
             trigger: "axis",
             axisPointer: {
@@ -36,7 +39,7 @@ export default function Page(props: {
         },
         xAxis: {
             type: "category",
-            data: props.chartDate,
+            data: chartDate,
             axisLine: { lineStyle: { color: "#8392A5" } },
         },
         yAxis: {
@@ -72,7 +75,12 @@ export default function Page(props: {
             {
                 type: "candlestick",
                 name: "Day",
-                data: props.chartData,
+                data: chartData.map(({ open, close, high, low }) => [
+                    roundByDigit(open, 2),
+                    roundByDigit(close, 2),
+                    roundByDigit(low, 2),
+                    roundByDigit(high, 2),
+                ]),
                 itemStyle: {
                     color0: "#FD1050",
                     color: "#0CF49B",
@@ -80,26 +88,26 @@ export default function Page(props: {
                     borderColor: "#0CF49B",
                 },
             },
-            // {
-            //     name: "EMA Short",
-            //     type: "line",
-            //     data: chartEMAShort,
-            //     smooth: true,
-            //     showSymbol: false,
-            //     lineStyle: {
-            //         width: 1,
-            //     },
-            // },
-            // {
-            //     name: "EMA Long",
-            //     type: "line",
-            //     data: chartEMALong,
-            //     smooth: true,
-            //     showSymbol: false,
-            //     lineStyle: {
-            //         width: 1,
-            //     },
-            // },
+            {
+                name: "EMA Short",
+                type: "line",
+                data: chartEMAShort.map(e => roundByDigit(e, 2)),
+                smooth: true,
+                showSymbol: false,
+                lineStyle: {
+                    width: 1,
+                },
+            },
+            {
+                name: "EMA Long",
+                type: "line",
+                data: chartEMALong.map(e => roundByDigit(e, 2)),
+                smooth: true,
+                showSymbol: false,
+                lineStyle: {
+                    width: 1,
+                },
+            },
         ],
     };
 
@@ -129,7 +137,7 @@ export default function Page(props: {
                 </div>
             </div>
             <div className="h-screen overflow-x-scroll">
-                <ReactECharts option={options} style={{height: "90vh"}}/>
+                <ReactECharts option={options} style={{ height: "90vh" }} />
             </div>
         </div>
     );

@@ -4,29 +4,46 @@ import { simulateSmashday, simulateSwingplay } from "@/app/lib/db";
 export async function POST(request: NextRequest) {
     const body = await request.json();
 
-    let result: {
-        sumAll: number;
-        sumGain: number;
-        sumLoss: number;
-        cntGain: number;
-        cntLoss: number;
-        details: {
-            startDate: string;
-            endDate: string;
-            tradeType: "Buy" | "Sell" | "";
-            outcome: string;
-            amount: string;
+    let resultAll: {
+        result: {
+            sumAll: number;
+            sumGain: number;
+            sumLoss: number;
+            cntGain: number;
+            cntLoss: number;
+            details: {
+                startDate: string;
+                endDate: string;
+                tradeType: "Buy" | "Sell" | "";
+                outcome: string;
+                amount: string;
+            }[];
+        };
+        data: {
+            date: string;
+            open: number;
+            close: number;
+            high: number;
+            low: number;
+            hband?: number;
+            lband?: number;
+            emashort?: number;
+            emalong?: number;
         }[];
     } = {
-        sumAll: 0,
-        sumGain: 0,
-        sumLoss: 0,
-        cntGain: 0,
-        cntLoss: 0,
-        details: [{ startDate: "", endDate: "", tradeType: "", outcome: "", amount: "" }],
+        result: {
+            sumAll: 0,
+            sumGain: 0,
+            sumLoss: 0,
+            cntGain: 0,
+            cntLoss: 0,
+            details: [{ startDate: "", endDate: "", tradeType: "", outcome: "", amount: "" }],
+        },
+        data: [],
     };
+
     if (body.mode == "smashday")
-        result = await simulateSmashday({
+        resultAll = await simulateSmashday({
             symbol: body.symbol,
             start: body.start,
             end: body.end,
@@ -35,7 +52,7 @@ export async function POST(request: NextRequest) {
             EMA: { short: body.EMAShort, long: body.EMALong },
         });
     else if (body.mode == "swingplay")
-        result = await simulateSwingplay({
+        resultAll = await simulateSwingplay({
             symbol: body.symbol,
             start: body.start,
             end: body.end,
@@ -47,6 +64,7 @@ export async function POST(request: NextRequest) {
                     ? { short: body.EMAShort, long: body.EMALong }
                     : undefined,
         });
+    const { result, data } = resultAll;
 
     return new Response(
         JSON.stringify({
@@ -56,6 +74,7 @@ export async function POST(request: NextRequest) {
             cntGain: result.cntGain,
             cntLoss: result.cntLoss,
             details: result.details,
+            data: data,
         })
     );
 }

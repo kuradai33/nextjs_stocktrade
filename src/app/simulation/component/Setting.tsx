@@ -32,6 +32,17 @@ type Props = {
             }[];
         }>
     >;
+    setChartDatas: Dispatch<SetStateAction<{
+        date: string;
+        open: number;
+        close: number;
+        high: number;
+        low: number;
+        hband?: number;
+        lband?: number;
+        emashort?: number;
+        emalong?: number;
+    }[]>>;
     setResultHeatmap: Dispatch<SetStateAction<{
         dataHeatmap: number[][];
         shortHeatmap: string[];
@@ -55,6 +66,7 @@ export default function Page(props: Props) {
         setHelpMessage,
         setResultVisible,
         setResult,
+        setChartDatas,
         setResultHeatmap,
         resultRef,
     } = props;
@@ -134,6 +146,7 @@ export default function Page(props: Props) {
                 details: jsonData.details,
             };
             setResult(result);
+            setChartDatas(jsonData.data);
             setResultVisible(true);
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
         } catch (err) {

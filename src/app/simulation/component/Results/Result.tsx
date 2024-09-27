@@ -25,6 +25,17 @@ type Props = {
                 amount: string;
             }[];
         };
+        chartDatas: {
+            date: string;
+            open: number;
+            close: number;
+            high: number;
+            low: number;
+            hband?: number;
+            lband?: number;
+            emashort?: number;
+            emalong?: number;
+        }[];
         resultHeatmap: {
             dataHeatmap: number[][];
             shortHeatmap: string[];
@@ -34,13 +45,25 @@ type Props = {
 };
 
 export default function Page(props: Props) {
-    const { activeTab, stockSymbol, stockName, modeHeatmap, resultData, resultHeatmap } = props.result;
+    const {
+        activeTab,
+        stockSymbol,
+        stockName,
+        modeHeatmap,
+        resultData,
+        chartDatas,
+        resultHeatmap,
+    } = props.result;
     const { totalProfit, totalGain, totalLoss, cntGain, cntLoss, details } = resultData;
     const { dataHeatmap, shortHeatmap, longHeatmap } = resultHeatmap;
 
     const [chartVisible, setChartVisible] = useState(false);
-    const [chartDatas, setChartDatas] = useState({chartData: [{ date: "", open: 0, close: 0, high: 0, low: 0, emashort: 0, emalong: 0 }], chartDate: [""], chartEMAShort: [0], chartEMALong: [0]});
-    const {chartData, chartDate, chartEMAShort, chartEMALong} = chartDatas;
+    const [chartShowDatas, setChartShowDatas] = useState({
+        chartData: [{ open: 0, close: 0, high: 0, low: 0 }],
+        chartDate: [""],
+        chartEMAShort: [0],
+        chartEMALong: [0],
+    });
 
     const [chartEMAShortSpan, setChartEMAShortSpan] = useState(13);
     const [chartEMALongSpan, setChartEMALongSpan] = useState(26);
@@ -86,7 +109,8 @@ export default function Page(props: Props) {
                             <ResultDetail
                                 stockSymbol={stockSymbol}
                                 details={details}
-                                setChartDatas={setChartDatas}
+                                chartDatas={chartDatas}
+                                setChartShowDatas={setChartShowDatas}
                                 chartEMAShortSpan={chartEMAShortSpan}
                                 chartEMALongSpan={chartEMALongSpan}
                                 setChartEMAShortSpan={setChartEMAShortSpan}
@@ -95,13 +119,7 @@ export default function Page(props: Props) {
                             />
 
                             {/* Stock Chart */}
-                            {chartVisible && (
-                                <ResultChart
-                                    chartData={chartData}
-                                    chartDate={chartDate}
-                                    chartVisible={chartVisible}
-                                />
-                            )}
+                            {chartVisible && <ResultChart chartShowDatas={chartShowDatas} />}
                         </div>
                     </>
                 )}

@@ -1,6 +1,7 @@
 import prisma from "./prisma";
 import { SignalType } from "./defines";
 import { asc } from "echarts/types/src/util/number.js";
+import { dataColorPaletteTask } from "echarts/types/src/visual/style.js";
 
 export async function addMessageInForm(message: string) {
     const post = await prisma.form.create({
@@ -375,7 +376,7 @@ export async function simulateSmashday(param: {
         }
     }
 
-    return result;
+    return {result: result, data: prices};
 }
 
 export async function simulateSwingplay(param: {
@@ -426,17 +427,20 @@ export async function simulateSwingplay(param: {
         tradeType: "Buy" | "Sell" | "" = "",
         tradePeriod = 0,
         over4per = false,
-        startDate = "";
+        startDate = "",
+        readyBuy = true,
+        readySell = true;
 
     const useBuy = param.tradeType == "buy" || param.tradeType == "both",
         useSell = param.tradeType == "sell" || param.tradeType == "both";
 
     for (let i = 1; i < prices.length; i++) {
+        const emashort = prices[i - 1].emashort,
+            emalong = prices[i - 1].emalong;
         if (tradeType != "") {
             let outcome: string = "",
                 amount = 0;
             if (tradeType == "Buy") {
-                const emalong = prices[i - 1].emalong;
                 // Loss
                 if (!over4per && prices[i].low < tradePrice * 0.96) {
                     amount = tradePrice * 0.96 - tradePrice;
@@ -460,7 +464,6 @@ export async function simulateSwingplay(param: {
                     continue;
                 }
             } else if ((tradeType = "Sell")) {
-                const emalong = prices[i - 1].emalong;
                 // Loss
                 if (!over4per && prices[i].high > tradePrice * 1.04) {
                     amount = tradePrice - tradePrice * 1.04;
@@ -501,42 +504,50 @@ export async function simulateSwingplay(param: {
         } else {
             if (useBuy) {
                 let signalBuy = false;
-                const emashort = prices[i - 1].emashort,
-                    emalong = prices[i - 1].emalong;
                 if (emashort && emalong) {
-                    signalBuy = emashort > emalong && emashort < prices[i].high;
+                    signalBuy = emashort > emalong && emashort > prices[i - 1].close && readyBuy;
                 }
 
                 if (signalBuy && emashort) {
-                    tradePrice = emashort;
+                    tradePrice = prices[i].open;
                     startDate = prices[i].date;
                     tradeType = "Buy";
                     over4per = false;
                     tradePeriod = 0;
+                    readyBuy = false;
                     continue;
                 }
             }
             if (useSell) {
                 let signalSell = false;
-                const emashort = prices[i - 1].emashort,
-                    emalong = prices[i - 1].emalong;
                 if (emashort && emalong) {
-                    signalSell = emashort < emalong && emashort > prices[i].low;
+                    signalSell = emashort < emalong && emashort > prices[i - 1].close && readySell;
                 }
 
                 if (signalSell && emashort) {
-                    tradePrice = emashort;
+                    tradePrice = prices[i].open;
                     startDate = prices[i].date;
                     tradeType = "Sell";
                     over4per = false;
                     tradePeriod = 0;
+                    readySell = false;
                     continue;
+                }
+            }
+
+            const emashort_cur = prices[i].emashort, emalong_cur = prices[i].emalong;
+            if(emashort && emalong && emashort_cur && emalong_cur){
+                if(emashort < emalong && emalong_cur < emashort_cur){
+                    readyBuy = true;
+                }
+                if(emashort > emalong && emalong_cur > emashort_cur){
+                    readySell = true;
                 }
             }
         }
     }
 
-    return result;
+    return {result: result, data: prices};
 }
 
 function convertDateNum(date: string) {

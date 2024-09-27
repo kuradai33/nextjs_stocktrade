@@ -1,4 +1,5 @@
 import { ipAddress } from "@/app/lib/defines";
+import { dateGetterName } from "echarts/types/src/util/time.js";
 import { Dispatch, SetStateAction } from "react";
 
 type Props = {
@@ -6,16 +7,24 @@ type Props = {
     details: { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[];
     chartEMAShortSpan: number;
     chartEMALongSpan: number;
-    setChartDatas: Dispatch<
+    chartDatas: {
+        date: string;
+        open: number;
+        close: number;
+        high: number;
+        low: number;
+        hband?: number;
+        lband?: number;
+        emashort?: number;
+        emalong?: number;
+    }[];
+    setChartShowDatas: Dispatch<
         SetStateAction<{
             chartData: {
-                date: string;
                 open: number;
                 close: number;
                 high: number;
                 low: number;
-                emashort: number;
-                emalong: number;
             }[];
             chartDate: string[];
             chartEMAShort: number[];
@@ -33,31 +42,24 @@ export default function Page(props: Props) {
         details,
         chartEMAShortSpan,
         chartEMALongSpan,
-        setChartDatas,
+        chartDatas,
+        setChartShowDatas,
         setChartVisible,
     } = props;
+
     const submitChart = async (start: string, end: string) => {
         try {
-            const response = await fetch("http://" + ipAddress + "/api/chart", {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    symbol: props.stockSymbol,
-                    start: start,
-                    end: end,
-                    emashort: props.chartEMAShortSpan,
-                    emalong: props.chartEMALongSpan,
-                }),
-            });
-            const jsonData = await response.json();
-            setChartDatas({
-                chartData: jsonData.stockData,
-                chartDate: jsonData.stockDate,
-                chartEMAShort: jsonData.stockEMAShort,
-                chartEMALong: jsonData.stockEMALong,
+            const startIndex = chartDatas.findIndex(({date}) => date === start);
+            const endIndex = chartDatas.findIndex(({date}) => date === end);
+            const startIndexProcessed = Math.max(startIndex - 5, 0);
+            const endIndexProcessed = Math.min(endIndex + 5, chartDatas.length - 1);
+            const chartDatasProcessed = chartDatas.slice(startIndexProcessed, endIndexProcessed + 1);
+            console.log(chartDatasProcessed.map(({date, open, close, high, low}) => ({date: date, open: open, close: close, high: high, low: low})));
+            setChartShowDatas({
+                chartData: chartDatasProcessed.map(({open, close, high, low}) => ({open: open, close: close, high: high, low: low})),
+                chartDate: chartDatasProcessed.map(({date}) => date),
+                chartEMAShort: chartDatasProcessed.map(({emashort}) => emashort ? emashort : -1),
+                chartEMALong: chartDatasProcessed.map(({emalong}) => emalong ? emalong : -1),
             });
             setChartVisible(true);
         } catch (err) {
@@ -78,7 +80,7 @@ export default function Page(props: Props) {
                             </tr>
                         </thead>
                         <tbody>
-                            {props.details.map((detail, index) => (
+                            {details.map((detail, index) => (
                                 <tr
                                     key={index}
                                     onClick={() => submitChart(detail.startDate, detail.endDate)}
