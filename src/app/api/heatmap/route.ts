@@ -43,14 +43,14 @@ export async function POST(request: NextRequest) {
     for (let i = EMAShortStartSwingplay; i <= EMAShortEndSwingplay; i++) {
         for (let j = EMALongStartSwingplay; j <= EMALongEndSwingplay; j++) {
             const resultProfit = (
-                await simulateSwingplay({
+                (await simulateSwingplay({
                     symbol: symbol,
                     start: start,
                     end: end,
                     tradeType: tradeType,
                     closingPeriod: closingPeriod,
                     EMA: { short: i, long: j },
-                })
+                })).result
             ).sumAll;
             results.push([
                 i - EMAShortStartSwingplay,

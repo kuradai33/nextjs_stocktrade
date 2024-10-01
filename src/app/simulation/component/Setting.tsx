@@ -96,7 +96,7 @@ export default function Page(props: Props) {
         e.preventDefault();
         try {
             setStockSymbol(e.target.value);
-            const response = await fetch("http://" + ipAddress + ":3000/api/symbolname", {
+            const response = await fetch("http://" + ipAddress + "/api/symbolname", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
