@@ -9,6 +9,9 @@ from prisma import Prisma
 
 DATE_FORMAT = "%Y-%m-%d"
 
+def getDateformat():
+    return DATE_FORMAT
+
 def incStrDate(strDate: str):
     def str_to_date(stri):
         strDatetime = dt.datetime.strptime(str(stri), DATE_FORMAT)
@@ -17,6 +20,9 @@ def incStrDate(strDate: str):
 
 # symbolの銘柄コードのデータをstart~endの範囲で取得
 async def updateDB(symbol: str, start: str, end: str):
+    '''
+    symbol: 4文字のコード
+    '''
     symbolcode = symbol + ".T" # 検索用コードに変換
 
     prisma = Prisma()
@@ -57,7 +63,7 @@ async def updateDB(symbol: str, start: str, end: str):
     def addData(startdate: str, enddate: str):
         print("[", startdate, ",", enddate, ")のデータを取得しました")
         df: pd.DataFrame = yf.download(symbolcode, start = startdate, end = enddate)
-        print(df)
+        # print(df)
         def convertData(dict: tuple[pdtime.Timestamp, dict[str, float]]):
             (date, value) = dict
             strdate = str(date)[0: 10]
@@ -72,8 +78,14 @@ async def updateDB(symbol: str, start: str, end: str):
             convertedDict["low"] = value["Low"]
             convertedDict["volume"] = value["Volume"]
             return convertedDict
+        newDatas = list(map(lambda x: convertData(x), df.to_dict(orient="index").items())) # type: ignore
         
-        registerData.extend(list(map(lambda x: convertData(x), df.to_dict(orient="index").items()))) # type: ignore
+        if newDatas == []:
+            return
+        elif start != newDatas[0] or end != newDatas[-1]:
+            return
+        else:
+            registerData.extend(newDatas)
         
     if start < oldestDate:
         addData(start, oldestDate)
@@ -82,10 +94,11 @@ async def updateDB(symbol: str, start: str, end: str):
 
     # print("以下のデータをデータベースに追加しました")
     # print(registerData)
-    await prisma.stockprices.create_many(
-        data=registerData
-    )
+    try:
+        await prisma.stockprices.create_many(
+            data=registerData
+        )
+    except:
+        print("Error: 重複したデータが追加されました")
 
     return
-
-asyncio.run(updateDB("7203", "2024-05-01" , "2024-06-30"))
