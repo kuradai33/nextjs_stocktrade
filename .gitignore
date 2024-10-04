@@ -40,3 +40,4 @@ certificates
 /prisma/migrations
 /prisma/dev.db
 /src/datas
+/src/libpy/__pycache__
