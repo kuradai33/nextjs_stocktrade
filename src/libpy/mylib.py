@@ -82,7 +82,7 @@ async def updateDB(symbol: str, start: str, end: str):
         
         if newDatas == []:
             return
-        elif start != newDatas[0] or end != newDatas[-1]:
+        elif newDatas[-1]["date"] < startdate:
             return
         else:
             registerData.extend(newDatas)
@@ -98,6 +98,7 @@ async def updateDB(symbol: str, start: str, end: str):
         await prisma.stockprices.create_many(
             data=registerData
         )
+        print("Success: 追加されました")
     except:
         print("Error: 重複したデータが追加されました")
 
