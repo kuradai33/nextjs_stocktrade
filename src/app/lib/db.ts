@@ -2,6 +2,8 @@ import prisma from "./prisma";
 import { SignalType } from "./defines";
 import { asc } from "echarts/types/src/util/number.js";
 import { dataColorPaletteTask } from "echarts/types/src/visual/style.js";
+import { Risque } from "next/font/google";
+import { debug } from "console";
 
 export async function addMessageInForm(message: string) {
     const post = await prisma.form.create({
@@ -117,7 +119,12 @@ export async function getStockData(param: {
 
 export function addIndicator(
     rawPrices: { date: string; open: number; close: number; high: number; low: number }[],
-    param: { HLBand: number | null; EMA: { short: number; long: number } | null }
+    param: {
+        HLBand: number | null;
+        EMA: { short: number; long: number } | null;
+        RSIBB: { rsi: number; emarsi: number } | null;
+    },
+    debug: boolean = false,
 ) {
     let result: {
         date: string;
@@ -129,6 +136,9 @@ export function addIndicator(
         lband?: number;
         emashort?: number;
         emalong?: number;
+        rsi?: number;
+        rsibb_down2?: number;
+        rsibb_up2?: number;
     }[] = [];
 
     const useHLBand = param.HLBand && param.HLBand > 0;
@@ -149,6 +159,19 @@ export function addIndicator(
 
     let emashort = 0,
         emalong = 0;
+
+    const useRSIBB = param.RSIBB && param.RSIBB.rsi > 0 && param.RSIBB.emarsi > 0;
+
+    let valueForRSI: {
+        partialSumInc: number;
+        partialSumDec: number;
+        emarsi?: number;
+    }[] = [];
+    const spanRSI = param.RSIBB ? param.RSIBB.rsi : 0,
+        spanEMARSI = param.RSIBB ? param.RSIBB.emarsi : 0;
+    let emarsi = 0, rmaIncinSpan = 0, rmaDecinSpan = 0;
+    const weightRSI = 2 / (spanEMARSI + 1);
+
     for (let i = 0; i < rawPrices.length; i++) {
         let price: {
             date: string;
@@ -160,6 +183,9 @@ export function addIndicator(
             lband?: number;
             emashort?: number;
             emalong?: number;
+            rsi?: number;
+            rsibb_down2?: number;
+            rsibb_up2?: number;
         } = rawPrices[i];
         let hband = -1,
             lband = 1000000;
@@ -195,6 +221,57 @@ export function addIndicator(
             }
         }
 
+        if (useRSIBB) {
+            if (i > 0) {
+                // 差分の計算可能
+                const inc = Math.max(rawPrices[i].close - rawPrices[i - 1].close, 0),
+                    dec = Math.max(rawPrices[i - 1].close - rawPrices[i].close, 0);
+                if (i >= spanRSI) {
+                    // 差分の期間合計計算可能
+                    if(i == spanRSI){
+                        rmaIncinSpan = (rmaIncinSpan + inc) / spanRSI;
+                        rmaDecinSpan = (rmaDecinSpan + dec) / spanRSI;
+                    }
+                    else{
+                        rmaIncinSpan = (rmaIncinSpan * (spanRSI - 1) + inc) / spanRSI;
+                        rmaDecinSpan = (rmaDecinSpan * (spanRSI - 1) + dec) / spanRSI;
+                    }
+                    const rs = rmaIncinSpan / rmaDecinSpan;
+                    price.rsi = 100 - 100 / (1 + rs);
+
+                    if (i > spanRSI + spanEMARSI - 1) {
+                        // rsiのema計算可能
+                        emarsi = price.rsi * weightRSI + emarsi * (1 - weightRSI);
+                    } else if (i == spanRSI + spanEMARSI - 1) {
+                        // rsiのema計算可能
+                        emarsi += price.rsi;
+                        emarsi /= spanEMARSI;
+                    } else {
+                        emarsi += price.rsi;
+                    }
+
+                    if (i >= spanRSI + spanEMARSI - 1) {
+                        // bb計算可能
+                        let variance = (price.rsi - emarsi) ** 2;
+                        for (let j = i - 19; j < i; j++) {
+                            const rsi = result[j].rsi;
+                            if (rsi) variance += (rsi - emarsi) ** 2;
+                        }
+                        const std = Math.sqrt(variance / spanEMARSI);
+                        price.rsibb_up2 = emarsi + 2 * std;
+                        price.rsibb_down2 = emarsi - 2 * std;
+                        if(debug) console.log(`rmai:${rmaIncinSpan} rmad:${rmaDecinSpan} rs:${rs} rsi:${price.rsi} ema:${emarsi} std:${std} bbu:${price.rsibb_up2} bbd:${price.rsibb_down2}`);
+                    }
+                }
+                else{
+                    rmaIncinSpan += inc;
+                    rmaDecinSpan += dec;
+                }
+            } else {
+                valueForRSI.push({ partialSumInc: 0, partialSumDec: 0 });
+            }
+        }
+
         result.push(price);
     }
 
@@ -227,7 +304,7 @@ export async function simulateSmashday(param: {
         },
     });
 
-    const prices = addIndicator(rawPrices, { HLBand: param.HLBand, EMA: param.EMA });
+    const prices = addIndicator(rawPrices, { HLBand: param.HLBand, EMA: param.EMA, RSIBB: null });
 
     let result: {
         sumAll: number;
@@ -376,7 +453,7 @@ export async function simulateSmashday(param: {
         }
     }
 
-    return {result: result, data: prices};
+    return { result: result, data: prices };
 }
 
 export async function simulateSwingplay(param: {
@@ -406,7 +483,7 @@ export async function simulateSwingplay(param: {
         },
     });
 
-    const prices = addIndicator(rawPrices, { HLBand: null, EMA: param.EMA });
+    const prices = addIndicator(rawPrices, { HLBand: null, EMA: param.EMA, RSIBB: null });
 
     let result: {
         sumAll: number;
@@ -535,19 +612,158 @@ export async function simulateSwingplay(param: {
                 }
             }
 
-            const emashort_cur = prices[i].emashort, emalong_cur = prices[i].emalong;
-            if(emashort && emalong && emashort_cur && emalong_cur){
-                if(emashort < emalong && emalong_cur < emashort_cur){
+            const emashort_cur = prices[i].emashort,
+                emalong_cur = prices[i].emalong;
+            if (emashort && emalong && emashort_cur && emalong_cur) {
+                if (emashort < emalong && emalong_cur < emashort_cur) {
                     readyBuy = true;
                 }
-                if(emashort > emalong && emalong_cur > emashort_cur){
+                if (emashort > emalong && emalong_cur > emashort_cur) {
                     readySell = true;
                 }
             }
         }
     }
 
-    return {result: result, data: prices};
+    return { result: result, data: prices };
+}
+
+export async function signalRSIBBAllSymbol(param: { date: string }) {
+    const spanRSI = 14,
+        spanEMARSI = 20;
+
+    const allSymbolId = await prisma.stocks.findMany();
+
+    let result: {code: string; name: string; signal: "" | "buy" | "sell" | "buy+" | "sell+"; close: number; date: string}[] = [];
+    let date = "";
+
+    for(const symbol of allSymbolId){
+        // console.log(`${symbol.code}`);
+        const rawPrices = (
+            await prisma.stockprices.findMany({
+                where: {
+                    AND: [{ stock_id: symbol.id }],
+                },
+                orderBy: {
+                    date: "desc",
+                },
+                select: {
+                    date: true,
+                    open: true,
+                    close: true,
+                    high: true,
+                    low: true,
+                },
+            })
+        ).sort((a, b) => {
+            if (a.date == b.date) {
+                return 0;
+            } else if (a.date > b.date) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+
+        if(rawPrices.length < spanRSI + spanEMARSI) continue;
+
+        // if(symbol.code == "1301") console.log(rawPrices);
+
+        date = date < rawPrices[rawPrices.length - 1].date ? rawPrices[rawPrices.length - 1].date : date;
+    
+        const prices = addIndicator(rawPrices, {
+            HLBand: null,
+            EMA: null,
+            RSIBB: { rsi: spanRSI, emarsi: spanEMARSI },
+        });
+
+        // for(const e of prices){
+        //     console.log(e);
+        // }
+
+        const latestPrice = prices[prices.length - 1];
+        const rsi = latestPrice.rsi,
+            rsibb_down2 = latestPrice.rsibb_down2,
+            rsibb_up2 = latestPrice.rsibb_up2;
+        let signal: "" | "buy" | "sell" | "buy+" | "sell+" = "";
+        if (typeof(rsi) == "number" && typeof(rsibb_down2) == "number" && typeof(rsibb_up2) == "number") {
+            if (rsi <= rsibb_down2){
+                if(rsi <= 30) signal = "buy+";
+                else signal = "buy";
+            }
+            else if (rsi >= rsibb_up2){
+                if(rsi >= 70) signal = "sell+";
+                else signal = "sell";
+            }
+        } else {
+            console.log("RSIまたはそのボリンジャーバンドが得られていません");
+            break;
+        }
+    
+        if(signal != "") console.log(`signal:${signal} code:${symbol.code}`)
+        result.push({code: symbol.code, name: symbol.name, signal: signal, close: latestPrice.close, date: rawPrices[rawPrices.length - 1].date});
+    }
+
+    return {date: date, result: result};
+}
+
+export async function signalRSIBB(param: { code: string; date: string }) {
+    const spanRSI = 14,
+        spanEMARSI = 20;
+
+    const id = (await prisma.stocks.findUnique({where: {code: param.code}, select: { id: true } }))?.id;
+    const rawPrices = (
+        await prisma.stockprices.findMany({
+            where: {
+                AND: [{ stock_id: id }, { date_num: { lte: convertDateNum(param.date) } }],
+            },
+            orderBy: {
+                date: "desc",
+            },
+            select: {
+                date: true,
+                open: true,
+                close: true,
+                high: true,
+                low: true,
+                volume: true,
+            },
+            take: spanRSI + spanEMARSI,
+        })
+    ).sort((a, b) => {
+        if (a.date == b.date) {
+            return 0;
+        } else if (a.date > b.date) {
+            return 1;
+        } else {
+            return -1;
+        }
+    });
+
+    const prices = addIndicator(rawPrices, {
+        HLBand: null,
+        EMA: null,
+        RSIBB: { rsi: spanRSI, emarsi: spanEMARSI },
+    });
+    const latestPrice = prices[prices.length - 1];
+    const rsi = latestPrice.rsi,
+        rsibb_down2 = latestPrice.rsibb_down2,
+        rsibb_up2 = latestPrice.rsibb_up2;
+    let signal: "" | "buy" | "sell" | "buy+" | "sell+" = "";
+    if (rsi && rsibb_down2 && rsibb_up2) {
+        if (rsi <= rsibb_down2){
+            if(rsi <= 30) signal = "buy+";
+            else signal = "buy";
+        }
+        else if (rsi >= rsibb_up2){
+            if(rsi >= 70) signal = "sell+";
+            else signal = "sell";
+        }
+    } else {
+        console.log("RSIまたはそのボリンジャーバンドが得られていません");
+    }
+
+    return {signal: signal, close: latestPrice.close};
 }
 
 function convertDateNum(date: string) {
