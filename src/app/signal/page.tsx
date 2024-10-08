@@ -145,13 +145,13 @@ export default function Page() {
                                 <table className="text-left">
                                     <thead>
                                         <tr>
-                                            <th className="sticky px-1 font-medium">コード</th>
-                                            <th className="sticky px-1 font-medium">銘柄</th>
-                                            <th className="sticky px-1 font-medium">終値</th>
-                                            <th className="sticky px-1 font-medium">日付</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">コード</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">銘柄</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">終値</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">日付</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="">
+                                    <tbody>
                                         {signalResults.buy.length > 0
                                             ? signalResults.buy.map((result, index) => (
                                                   <tr
@@ -183,10 +183,10 @@ export default function Page() {
                                 <table className="text-left">
                                     <thead>
                                         <tr>
-                                            <th className="sticky px-1 font-medium">コード</th>
-                                            <th className="sticky px-1 font-medium">銘柄</th>
-                                            <th className="sticky px-1 font-medium">終値</th>
-                                            <th className="sticky px-1 font-medium">日付</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">コード</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">銘柄</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">終値</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">日付</th>
                                         </tr>
                                     </thead>
                                     <tbody className="">
