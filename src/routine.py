@@ -17,11 +17,10 @@ async def updateDetaBase():
     cnt = 0
     cntAllSymbol = len(symbolDatas)
     for data in symbolDatas:
-        code = data.code
-        await mylib.updateDB(code, "2024-01-01", (today + dt.timedelta(days=1)).strftime(mylib.getDateformat()))
         cnt += 1
         print(cnt, "/", cntAllSymbol)
-        print(code, "を取得しました")
+        code = data.code
+        await mylib.updateDB(code, "2024-01-01", (today + dt.timedelta(days=1)).strftime(mylib.getDateformat()))
         time.sleep(3) # 待機
         
 asyncio.run(updateDetaBase())

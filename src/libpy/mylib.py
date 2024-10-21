@@ -23,6 +23,7 @@ async def updateDB(symbol: str, start: str, end: str):
     '''
     symbol: 4文字のコード
     '''
+    print(symbol, "を取得しました")
     symbolcode = symbol + ".T" # 検索用コードに変換
 
     prisma = Prisma()

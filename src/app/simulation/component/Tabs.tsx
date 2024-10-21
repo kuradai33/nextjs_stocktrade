@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useState } from "react";
+import { SetStateAction, useLayoutEffect } from "react";
 
 import { signals, SignalType } from "../../lib/defines";
 import { setHelpText } from "@/app/lib/db";
@@ -9,6 +9,7 @@ export default function Page(props: {
     setActiveTab: (value: SetStateAction<SignalType>) => void;
     setHelpMessage: (value: SetStateAction<string>) => void;
 }) {
+    const {activeTab} = props;
     const submitGethelp = async (signal: SignalType) => {
         try {
             props.setActiveTab(signal);
@@ -29,14 +30,14 @@ export default function Page(props: {
         }
     };
 
-    useEffect(() => {
-        submitGethelp(props.activeTab);
-    }, []);
+    useLayoutEffect(() => {
+        submitGethelp(activeTab);
+    }, [activeTab]);
 
     return (
         <div className="flex justify-center mb-6">
             <div className="inline-flex border-b border-gray-300">
-                {signals.map((signal) => {
+                {signals.map((signal, index) => {
                     return (
                         <button
                             className={`py-2 px-4 text-lg font-semibold ${
@@ -45,6 +46,7 @@ export default function Page(props: {
                                     : "text-gray-600"
                             }`}
                             onClick={() => submitGethelp(signal)}
+                            key={index}
                         >
                             {signal}
                         </button>

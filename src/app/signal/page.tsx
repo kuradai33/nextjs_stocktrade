@@ -11,11 +11,15 @@ export default function Page() {
     const strDay = today.getDate() < 10 ? `0${today.getDate()}` : `${today.getDate()}`;
     const strToday = `${today.getFullYear()}-${strMonth}-${strDay}`;
 
+    const signals = ["RSI+BollingerBand"];
+    const [activeTab, setActiveTab] = useState<string>(signals[0]);
+
     const [date, setDate] = useState<string>(strToday);
     const [stockSymbol, setStockSymbol] = useState<string>("");
     const [stockName, setStockName] = useState<string>("");
 
     const [inputdate, setInputdate] = useState<string>(strToday);
+    const [buttonText, setButtonText] = useState<string>("表示");
     const [signalResults, setSignalResults] = useState<{
         date: string;
         buy: { code: string; name: String; close: number; plus: boolean; date: string }[];
@@ -48,6 +52,7 @@ export default function Page() {
     const submitSignalRSIBB = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
+            setButtonText("計算中...");
             const response = await fetch("http://" + ipAddress + "/api/signal/rsibb", {
                 method: "POST",
                 headers: {
@@ -66,17 +71,12 @@ export default function Page() {
                 buy: jsonData.buysignals,
                 sell: jsonData.sellsignals,
             });
+            setButtonText("表示");
             setIsShow(true);
         } catch (err) {
             alert("メッセージの送信が失敗しました");
         }
     };
-
-    const testlist = [
-        [1, 2, 3],
-        [4, 5, 6],
-        [7, 8, 9],
-    ];
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -84,6 +84,28 @@ export default function Page() {
                 {/* Title */}
                 <h1 className="text-4xl font-bold text-center mb-8">株シグナル</h1>
 
+                {/* Tabs */}
+                <div className="flex justify-center mb-6">
+                    <div className="inline-flex border-b border-gray-300">
+                        {signals.map((signal, index) => {
+                            return (
+                                <button
+                                    className={`py-2 px-4 text-lg font-semibold ${
+                                        activeTab === signal
+                                            ? "text-blue-500 border-b-2 border-blue-500"
+                                            : "text-gray-600"
+                                    }`}
+                                    onClick={() => setActiveTab(signal)}
+                                    key={index}
+                                >
+                                    {signal}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Setting */}
                 <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg mb-8">
                     <form onSubmit={submitSignalRSIBB}>
                         <div className="mb-4">
@@ -124,11 +146,12 @@ export default function Page() {
                             type="submit"
                             className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         >
-                            表示
+                            {buttonText}
                         </button>
                     </form>
                 </div>
 
+                {/* Result */}
                 <div className="p-4 w-full bg-white rounded-3xl border-2 ">
                     <div className="mb-2 flex items-end border-b border-gray-700">
                         <div className="mr-2 text-2xl font-medium">日付 {signalResults.date}</div>
@@ -139,84 +162,107 @@ export default function Page() {
                         )}
                     </div>
                     <div className="flex">
-                        <div className="w-full flex flex-col">
+                        <div className="w-[60%]">
                             <label className="text-lg font-medium">買いシグナル</label>
                             <div className="mb-2 h-[40vh] w-full overflow-y-scroll">
                                 <table className="text-left">
                                     <thead>
                                         <tr>
-                                            <th className="sticky top-0 px-1 bg-white font-semibold">コード</th>
-                                            <th className="sticky top-0 px-1 bg-white font-semibold">銘柄</th>
-                                            <th className="sticky top-0 px-1 bg-white font-semibold">終値</th>
-                                            <th className="sticky top-0 px-1 bg-white font-semibold">日付</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">
+                                                コード
+                                            </th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">
+                                                銘柄
+                                            </th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">
+                                                終値
+                                            </th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">
+                                                日付
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {signalResults.buy.length > 0
-                                            ? signalResults.buy.map((result, index) => (
-                                                  <tr
-                                                      className={`${
-                                                          result.plus ? "bg-red-300" : ""
-                                                      }`}
-                                                  >
-                                                      <td className="px-2 font-medium">
-                                                          {result.code}
-                                                      </td>
-                                                      <td className="px-1 font-medium">
-                                                          {result.name}
-                                                      </td>
-                                                      <td className="px-1 font-medium">
-                                                          ￥{result.close.toFixed(0)}
-                                                      </td>
-                                                      <td className="px-2 font-medium">
-                                                          {result.date}
-                                                      </td>
-                                                  </tr>
-                                              ))
-                                            : <tr><td colSpan={3}>シグナルがありません</td></tr>}
+                                        {signalResults.buy.length > 0 ? (
+                                            signalResults.buy.map((result, index) => (
+                                                <tr
+                                                    className={`${result.plus ? "bg-red-300" : ""}`}
+                                                    key={index}
+                                                >
+                                                    <td className="px-2 font-medium whitespace-nowrap">
+                                                        {result.code}
+                                                    </td>
+                                                    <td className="px-1 font-medium">
+                                                        {result.name}
+                                                    </td>
+                                                    <td className="px-1 font-medium whitespace-nowrap">
+                                                        ￥{result.close.toFixed(0)}
+                                                    </td>
+                                                    <td className="px-2 font-medium whitespace-nowrap">
+                                                        {result.date}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3}>シグナルがありません</td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
-
+                        </div>
+                        <div className="w-[40%]">
                             <label className="text-lg font-medium">売りシグナル</label>
                             <div className="mb-4 h-[40vh] w-full overflow-y-scroll">
                                 <table className="text-left">
                                     <thead>
                                         <tr>
-                                            <th className="sticky top-0 px-1 bg-white font-semibold">コード</th>
-                                            <th className="sticky top-0 px-1 bg-white font-semibold">銘柄</th>
-                                            <th className="sticky top-0 px-1 bg-white font-semibold">終値</th>
-                                            <th className="sticky top-0 px-1 bg-white font-semibold">日付</th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">
+                                                コード
+                                            </th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">
+                                                銘柄
+                                            </th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">
+                                                終値
+                                            </th>
+                                            <th className="sticky top-0 px-1 bg-white font-semibold">
+                                                日付
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="">
-                                        {signalResults.sell.length > 0
-                                            ? signalResults.sell.map((result, index) => (
-                                                  <tr
-                                                      className={`${
-                                                          result.plus ? "bg-red-300" : ""
-                                                      }`}
-                                                  >
-                                                      <td className="px-2 font-medium">
-                                                          {result.code}
-                                                      </td>
-                                                      <td className="px-2 font-medium">
-                                                          {result.name}
-                                                      </td>
-                                                      <td className="px-2 font-medium">
-                                                          ￥{result.close.toFixed(0)}
-                                                      </td>
-                                                      <td className="px-2 font-medium">
-                                                          {result.date}
-                                                      </td>
-                                                  </tr>
-                                              ))
-                                            : <tr><td colSpan={3}>シグナルがありません</td></tr>}
+                                        {signalResults.sell.length > 0 ? (
+                                            signalResults.sell.map((result, index) => (
+                                                <tr
+                                                    className={`${result.plus ? "bg-red-300" : ""}`}
+                                                    key={index}
+                                                >
+                                                    <td className="px-2 font-medium">
+                                                        {result.code}
+                                                    </td>
+                                                    <td className="px-2 font-medium">
+                                                        {result.name}
+                                                    </td>
+                                                    <td className="px-2 font-medium">
+                                                        ￥{result.close.toFixed(0)}
+                                                    </td>
+                                                    <td className="px-2 font-medium">
+                                                        {result.date}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3}>シグナルがありません</td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                        <div className="w-3/5">
+                        <div className="">
                             {/* {testlist.map((list, index) => (
                                 <div className="flex flex-row">
                                     {list.map((e, i) => (

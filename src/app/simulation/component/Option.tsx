@@ -54,8 +54,8 @@ export default function Page(props: argOption) {
                             }}
                             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                         >
-                            {argopt.select.map((e) => {
-                                return <option value={e.id}>{e.name}</option>;
+                            {argopt.select.map((e, index) => {
+                                return <option value={e.id} key={index}>{e.name}</option>;
                             })}
                         </select>
                     )}
@@ -92,8 +92,8 @@ export default function Page(props: argOption) {
 
                         {argopt.var &&
                             argopt.switchele &&
-                            argopt.switchele.map((e: argOption) => (
-                                <div className="ml-2">{makeOpt(e)}</div>
+                            argopt.switchele.map((e: argOption, index) => (
+                                <div className="ml-2" key={index}>{makeOpt(e)}</div>
                             ))}
                     </>
                 )}
