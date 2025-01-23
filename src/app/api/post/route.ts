@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
             cntGain: number;
             cntLoss: number;
             details: {
-                startDate: DateStr;
-                endDate: DateStr;
+                startDate: string;
+                endDate: string;
                 tradeType: "Buy" | "Sell" | "";
                 outcome: string;
                 amount: string;
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
             sumLoss: 0,
             cntGain: 0,
             cntLoss: 0,
-            details: [{ startDate: new DateStr(), endDate: new DateStr(), tradeType: "", outcome: "", amount: "" }],
+            details: [{ startDate: "", endDate: "", tradeType: "", outcome: "", amount: "" }],
         },
         data: [],
     };
