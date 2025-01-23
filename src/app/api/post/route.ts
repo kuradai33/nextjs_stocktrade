@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+
+import { DateStr } from "@/app/lib/defines";
 import { simulateSmashday, simulateSwingplay } from "@/app/lib/db";
 
 export async function POST(request: NextRequest) {
@@ -12,8 +14,8 @@ export async function POST(request: NextRequest) {
             cntGain: number;
             cntLoss: number;
             details: {
-                startDate: string;
-                endDate: string;
+                startDate: DateStr;
+                endDate: DateStr;
                 tradeType: "Buy" | "Sell" | "";
                 outcome: string;
                 amount: string;
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
             sumLoss: 0,
             cntGain: 0,
             cntLoss: 0,
-            details: [{ startDate: "", endDate: "", tradeType: "", outcome: "", amount: "" }],
+            details: [{ startDate: new DateStr(), endDate: new DateStr(), tradeType: "", outcome: "", amount: "" }],
         },
         data: [],
     };
