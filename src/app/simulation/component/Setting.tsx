@@ -3,10 +3,10 @@ import { ChangeEvent, Dispatch, FormEvent, RefObject, SetStateAction, useState }
 import SettingSmashday from "./Settings/SettingSmashday";
 import SettingInsideday from "./Settings/SettingInsideday";
 import SettingSwingplay from "./Settings/SettingSwingplay";
-import { settingSets } from "../../lib/interfaces";
-import { SignalType, ipAddress } from "../../lib/defines";
 import Help from "./Help";
-import { json } from "stream/consumers";
+
+import { SignalType, ipAddress, SimulationResult } from "@/app/lib/defines";
+import { convertSpecificStringToDateStr } from "@/app/lib/util";
 
 type Props = {
     activeTab: SignalType;
@@ -17,21 +17,7 @@ type Props = {
     modeHeatmap: boolean;
     setModeHeatmap: Dispatch<SetStateAction<boolean>>;
     setResultVisible: Dispatch<SetStateAction<boolean>>;
-    setResult: Dispatch<
-        SetStateAction<{
-            totalProfit: string;
-            totalGain: string;
-            totalLoss: string;
-            cntGain: string;
-            cntLoss: string;
-            details: {
-                startDate: string;
-                endDate: string;
-                outcome: "Gain" | "Loss";
-                amount: string;
-            }[];
-        }>
-    >;
+    setResult: Dispatch<SetStateAction<SimulationResult>>;
     setChartDatas: Dispatch<SetStateAction<{
         date: string;
         open: number;
@@ -137,15 +123,21 @@ export default function Page(props: Props) {
                 }),
             });
             const jsonData = await response.json();
-            const result = {
-                totalProfit: jsonData.total.toFixed(1),
-                totalGain: jsonData.totalGain.toFixed(1),
-                totalLoss: jsonData.totalLoss.toFixed(1),
-                cntGain: jsonData.cntGain,
-                cntLoss: jsonData.cntLoss,
-                details: jsonData.details,
-            };
-            setResult(result);
+            try{
+                const simulationResult = 
+                    new SimulationResult(
+                        jsonData.total,
+                        jsonData.totalGain,
+                        jsonData.totalLoss,
+                        jsonData.cntGain,
+                        jsonData.cntLoss,
+                        convertSpecificStringToDateStr(jsonData.details),
+                    );
+                setResult(simulationResult);
+            }
+            catch(e){
+                console.log(`Error: ${e}`);
+            }
             setChartDatas(jsonData.data);
             setResultVisible(true);
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
