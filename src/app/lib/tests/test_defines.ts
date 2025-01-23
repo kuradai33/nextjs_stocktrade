@@ -19,26 +19,28 @@ function testDateStrCase(testName: string,
     dateStr: string,
     raisedError: boolean,
     expectedErrorText: string = ""){
-try{
-// dateStrで実行する
-const date = new defines.DateStr(dateStr);
-}
-catch(errorText){
-// 入力が不適切だった
-const testResult = new util.TestResult(testName, 
-                    cntTestDateStr,
-                    {output: "", error: errorText},
-                    {output: "", error: expectedErrorText});
-util.printTestMessage(testResult);
-cntTestDateStr++;
-return;
-}
+    try{
+        // dateStrで実行する
+        const date = new defines.DateStr(dateStr);
+    }
+    catch(errorText){
+        // 入力が不適切だった
+        const testResult =
+            new util.TestResult(testName, 
+                                cntTestDateStr,
+                                {output: "", error: errorText},
+                                {output: "", error: expectedErrorText});
+        util.printTestMessage(testResult);
+        cntTestDateStr++;
+        return;
+    }
 
-// 入力が適切だった
-const testResult = new util.TestResult(testName, 
-                      cntTestDateStr,
-                      {output: ""},
-                      {output: ""});
-util.printTestMessage(testResult);
-cntTestDateStr++;
+    // 入力が適切だった
+    const testResult =
+        new util.TestResult(testName, 
+                            cntTestDateStr,
+                            {output: ""},
+                            {output: ""});
+    util.printTestMessage(testResult);
+    cntTestDateStr++;
 }
