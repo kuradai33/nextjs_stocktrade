@@ -5,6 +5,8 @@ import { dataColorPaletteTask } from "echarts/types/src/visual/style.js";
 import { Risque } from "next/font/google";
 import { debug } from "console";
 
+import { DateStr } from "@/app/lib/defines";
+
 export async function addMessageInForm(message: string) {
     const post = await prisma.form.create({
         data: {
@@ -313,8 +315,8 @@ export async function simulateSmashday(param: {
         cntGain: number;
         cntLoss: number;
         details: {
-            startDate: string;
-            endDate: string;
+            startDate: DateStr;
+            endDate: DateStr;
             tradeType: "Buy" | "Sell" | "";
             outcome: "Loss" | "Gain" | "";
             amount: string;
@@ -396,8 +398,8 @@ export async function simulateSmashday(param: {
                 }
             }
             result.details.push({
-                startDate: startDate,
-                endDate: prices[i].date,
+                startDate: new DateStr(startDate),
+                endDate: new DateStr(prices[i].date),
                 tradeType: tradeType,
                 outcome: outcome,
                 amount: amount.toFixed(1),
@@ -492,8 +494,8 @@ export async function simulateSwingplay(param: {
         cntGain: number;
         cntLoss: number;
         details: {
-            startDate: string;
-            endDate: string;
+            startDate: DateStr;
+            endDate: DateStr;
             tradeType: "Buy" | "Sell" | "";
             outcome: string;
             amount: string;
@@ -571,8 +573,8 @@ export async function simulateSwingplay(param: {
             else result.cntLoss++;
 
             result.details.push({
-                startDate: startDate,
-                endDate: prices[i].date,
+                startDate: new DateStr(startDate),
+                endDate: new DateStr(prices[i].date),
                 tradeType: tradeType,
                 outcome: outcome,
                 amount: amount >= 0 ? amount.toFixed(1) : "▲" + (-amount).toFixed(1),
