@@ -1,5 +1,7 @@
 /* 汎用コードのライブラリ */
 
+import { DateStr } from "@/app/lib/defines";
+
 // テストの結果を保持する
 export class TestResult{
     name_ = "";
@@ -64,6 +66,22 @@ export function printTestMessage(testInfo: TestResult){
             console.log(`  ExpectedError: ${expectedResult.error}`);
         }
     }
+}
+
+// 今日の日付を持ったDateStrを返す
+export function getTodayStr(): DateStr{
+    // 今日の日付を取得
+    const today = new Date();
+    const monthNum = today.getMonth() + 1;
+    const dayNum = today.getDate();
+    const yearNum = today.getFullYear();
+
+    // 月,日を2桁に
+    const monthStr = (monthNum < 10) ? `0${monthNum}` : `${monthNum}`;
+    const dayStr = (dayNum < 10) ? `0${dayNum}` : `${dayNum}`;
+
+    const todayStr = `${yearNum}-${monthStr}-${dayStr}`;
+    return new DateStr(todayStr);
 }
 
 // 文字列が特定の文字で構成されているか判定する
