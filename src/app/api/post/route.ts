@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { DateStr } from "@/app/lib/defines";
+import { DateStr, StockPriceChartData } from "@/app/lib/defines";
 import { convertDateStrToString } from "@/app/lib/util";
 import { simulateSmashday, simulateSwingplay } from "@/app/lib/db";
 
@@ -22,17 +22,7 @@ export async function POST(request: NextRequest) {
                 amount: string;
             }[];
         };
-        data: {
-            date: string;
-            open: number;
-            close: number;
-            high: number;
-            low: number;
-            hband?: number;
-            lband?: number;
-            emashort?: number;
-            emalong?: number;
-        }[];
+        data: StockPriceChartData;
     } = {
         result: {
             sumAll: 0,
@@ -42,7 +32,7 @@ export async function POST(request: NextRequest) {
             cntLoss: 0,
             details: [{ startDate: new DateStr(), endDate: new DateStr(), tradeType: "", outcome: "", amount: "" }],
         },
-        data: [],
+        data: new StockPriceChartData(),
     };
 
     if (body.mode == "smashday")
@@ -78,7 +68,7 @@ export async function POST(request: NextRequest) {
             cntGain: result.cntGain,
             cntLoss: result.cntLoss,
             details: result.details,
-            data: data,
+            data: data.convertJsonFormat(),
         }))
     );
 }
