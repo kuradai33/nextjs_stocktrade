@@ -5,7 +5,7 @@ import SettingInsideday from "./Settings/SettingInsideday";
 import SettingSwingplay from "./Settings/SettingSwingplay";
 import Help from "./Help";
 
-import { SignalType, ipAddress, SimulationResult } from "@/app/lib/defines";
+import { SignalType, ipAddress, SimulationResult, StockPriceChartData } from "@/app/lib/defines";
 import { convertSpecificStringToDateStr } from "@/app/lib/util";
 
 type Props = {
@@ -18,17 +18,7 @@ type Props = {
     setModeHeatmap: Dispatch<SetStateAction<boolean>>;
     setResultVisible: Dispatch<SetStateAction<boolean>>;
     setResult: Dispatch<SetStateAction<SimulationResult>>;
-    setChartDatas: Dispatch<SetStateAction<{
-        date: string;
-        open: number;
-        close: number;
-        high: number;
-        low: number;
-        hband?: number;
-        lband?: number;
-        emashort?: number;
-        emalong?: number;
-    }[]>>;
+    setChartDatas: Dispatch<SetStateAction<StockPriceChartData>>;
     setResultHeatmap: Dispatch<SetStateAction<{
         dataHeatmap: number[][];
         shortHeatmap: string[];
@@ -138,7 +128,7 @@ export default function Page(props: Props) {
             catch(e){
                 console.log(`Error: ${e}`);
             }
-            setChartDatas(jsonData.data);
+            setChartDatas(new StockPriceChartData(jsonData.data));
             setResultVisible(true);
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
         } catch (err) {
