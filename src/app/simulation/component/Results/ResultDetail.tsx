@@ -1,23 +1,14 @@
-import { ipAddress } from "@/app/lib/defines";
 import { dateGetterName } from "echarts/types/src/util/time.js";
 import { Dispatch, SetStateAction } from "react";
 
+import { DateStr, SignalDetailByDate, StockPriceChartData } from "@/app/lib/defines";
+
 type Props = {
     stockSymbol: string;
-    details: { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[];
+    details: SignalDetailByDate[];
     chartEMAShortSpan: number;
     chartEMALongSpan: number;
-    chartDatas: {
-        date: string;
-        open: number;
-        close: number;
-        high: number;
-        low: number;
-        hband?: number;
-        lband?: number;
-        emashort?: number;
-        emalong?: number;
-    }[];
+    chartDatas: StockPriceChartData;
     setChartShowDatas: Dispatch<
         SetStateAction<{
             chartData: {
@@ -47,24 +38,10 @@ export default function Page(props: Props) {
         setChartVisible,
     } = props;
 
-    const submitChart = async (start: string, end: string) => {
-        try {
-            const startIndex = chartDatas.findIndex(({date}) => date === start);
-            const endIndex = chartDatas.findIndex(({date}) => date === end);
-            const startIndexProcessed = Math.max(startIndex - 5, 0);
-            const endIndexProcessed = Math.min(endIndex + 5, chartDatas.length - 1);
-            const chartDatasProcessed = chartDatas.slice(startIndexProcessed, endIndexProcessed + 1);
-            console.log(chartDatasProcessed.map(({date, open, close, high, low}) => ({date: date, open: open, close: close, high: high, low: low})));
-            setChartShowDatas({
-                chartData: chartDatasProcessed.map(({open, close, high, low}) => ({open: open, close: close, high: high, low: low})),
-                chartDate: chartDatasProcessed.map(({date}) => date),
-                chartEMAShort: chartDatasProcessed.map(({emashort}) => emashort ? emashort : -1),
-                chartEMALong: chartDatasProcessed.map(({emalong}) => emalong ? emalong : -1),
-            });
-            setChartVisible(true);
-        } catch (err) {
-            alert("メッセージの送信が失敗しました");
-        }
+    const submitChart = async (startDate: DateStr, endDate: DateStr) => {
+        const chartData = chartDatas.createStockPriceChartData(startDate, endDate);
+        setChartShowDatas(chartData);
+        setChartVisible(true);
     };
 
     return (
@@ -80,14 +57,17 @@ export default function Page(props: Props) {
                             </tr>
                         </thead>
                         <tbody>
-                            {details.map((detail, index) => (
+                            {details.map((detail, index) => {
+                                const startDate = detail.startDate;
+                                const endDate = detail.endDate;
+                                return (
                                 <tr
                                     key={index}
                                     onClick={() => submitChart(detail.startDate, detail.endDate)}
                                     className="cursor-pointer hover:bg-gray-200"
                                 >
                                     <td className="border-b py-2 px-4">
-                                        {detail.startDate} ~ {detail.endDate}
+                                        {startDate.getDateStr()} ~ {endDate.getDateStr()}
                                     </td>
                                     <td
                                         className={`border-b py-2 px-4 ${
@@ -108,7 +88,7 @@ export default function Page(props: Props) {
                                         {detail.amount}
                                     </td>
                                 </tr>
-                            ))}
+                            )})}
                         </tbody>
                     </table>
                 </div>
