@@ -1,11 +1,7 @@
 import prisma from "./prisma";
-import { SignalType } from "./defines";
-import { asc } from "echarts/types/src/util/number.js";
-import { dataColorPaletteTask } from "echarts/types/src/visual/style.js";
-import { Risque } from "next/font/google";
-import { debug } from "console";
 
-import { DateStr } from "@/app/lib/defines";
+import { DateStr, StockPrice, StockPriceChartData } from "@/app/lib/defines";
+import * as data from "@/app/lib/data";
 
 export async function addMessageInForm(message: string) {
     const post = await prisma.form.create({
@@ -37,20 +33,58 @@ export async function setHelpText(signal: string, text: string) {
     }
 }
 
-export async function getSymbolName(symbol: string) {
-    const result = await prisma.stocks.findUnique({ where: { code: symbol } });
-    if (result) return result.name;
-    else return null;
+export async function getSymbolName(symbolCode: string) {
+    // TODO: 下の処理をメソッドにしてどこからでも呼べるようにする
+    // SymbolNamesがデータを持っていないなら渡す
+    if(!data.SymbolNames.getHasData()){
+        data.SymbolNames.setData(await prisma.stocks.findMany())
+    }
+    
+    return data.SymbolNames.getSymbolNameFromCode(symbolCode);
+}
+
+export async function getSymbolId(symbolCode: string){
+    // SymbolNamesがデータを持っていないなら渡す
+    if(!data.SymbolNames.getHasData()){
+        data.SymbolNames.setData(await prisma.stocks.findMany())
+    }
+
+    return data.SymbolNames.getSymbolIdFromCode(symbolCode);
 }
 
 export async function getStockData(param: {
     symbol: string;
-    start: string;
-    end: string;
-    extradate: number;
+    start?: string;
+    end?: string;
+    extradate?: number;
 }) {
-    const symbol_id = (await prisma.stocks.findUnique({ where: { code: param.symbol } }))?.id;
-    let rawPrices = await prisma.stockprices.findMany({
+    const symbol_id = await getSymbolId(param.symbol);
+    if(symbol_id == null) throw "Invalid Value: symbolが存在しない銘柄コードです";
+
+    if(!(param.start && param.end)){
+        const rawPrices = await prisma.stockprices.findMany({
+            where: {
+                stock_id: symbol_id,
+            },
+            select: {
+                date: true,
+                open: true,
+                close: true,
+                high: true,
+                low: true,
+                volume: true,
+            },
+        });
+        const stockPriceChartData =
+            rawPrices.map((val, _) =>
+            ({
+                date: new DateStr(val.date),
+                stockPrice: new StockPrice(val.open, val.high, val.low, val.close, val.volume),
+            }));
+        return new StockPriceChartData(param.symbol, {type: "class", data: stockPriceChartData});
+    }
+
+    const rawMainPrices = await prisma.stockprices.findMany({
         where: {
             AND: [
                 { stock_id: symbol_id },
@@ -114,9 +148,15 @@ export async function getStockData(param: {
         take: param.extradate,
     });
 
-    rawPrices = rawPrePrices.concat(rawPrices).concat(rawPostPrices);
+    const rawPrices = rawPrePrices.concat(rawMainPrices).concat(rawPostPrices);
 
-    return rawPrices;
+    const stockPriceChartData =
+        rawPrices.map((val, _) =>
+        ({
+            date: new DateStr(val.date),
+            stockPrice: new StockPrice(val.open, val.high, val.low, val.close, val.volume),
+        }));
+    return new StockPriceChartData(param.symbol, {type: "class", data: stockPriceChartData});
 }
 
 export function addIndicator(
@@ -303,6 +343,7 @@ export async function simulateSmashday(param: {
             close: true,
             high: true,
             low: true,
+            volume: true,
         },
     });
 
@@ -455,7 +496,7 @@ export async function simulateSmashday(param: {
         }
     }
 
-    return { result: result, data: prices };
+    return { result: result, data: await getStockData({symbol: param.symbol}) };
 }
 
 export async function simulateSwingplay(param: {
@@ -627,7 +668,7 @@ export async function simulateSwingplay(param: {
         }
     }
 
-    return { result: result, data: prices };
+    return { result: result, data: await getStockData({symbol: param.symbol}) };
 }
 
 export async function signalRSIBBAllSymbol(param: { date: string }) {
