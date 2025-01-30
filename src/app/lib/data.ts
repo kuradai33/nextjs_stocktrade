@@ -4,6 +4,7 @@ import { Dictionary } from "@/app/lib/defines";
 export class SymbolNames{
     private static data_: { code: string; id: number; name: string }[];
     private static dicCodeToName_: Dictionary<string, string> = {};
+    private static dicCodeToId_: Dictionary<string, number> = {};
     // private static dicNameToCode: Dictionary<string, string>;
     private static hasData_ = false;
 
@@ -19,6 +20,10 @@ export class SymbolNames{
         for(const e of data) dicCodeToName[e.code] = e.name;
         this.dicCodeToName_ = dicCodeToName;
 
+        let dicCodeToId: Dictionary<string, number> = {};
+        for(const e of data) dicCodeToId[e.code] = e.id;
+        this.dicCodeToId_ = dicCodeToId;
+
         // let dicNameToCode: Dictionary<string, string> = {};
         // for(const e of data) dicNameToCode[e.name] = e.code;
         // this.dicNameToCode_ = dicNameToCode;
@@ -26,11 +31,21 @@ export class SymbolNames{
 
     // 銘柄コードから銘柄名を取得する
     // 見つかったら銘柄名、見つからなかったらnull
-    public static getSymbolNameFromCode(code: string){
+    public static getSymbolNameFromCode(code: string): string | null{
         if(!this.hasData_) throw "データが設定されていません";
         
         const symbolName = this.dicCodeToName_[code];
         if(symbolName == undefined) return null;
         else return symbolName;
+    }
+
+    // 銘柄コードから銘柄IDを取得する
+    // 見つかったら銘柄ID、見つからなかったらnull
+    public static getSymbolIdFromCode(code: string): number | null{
+        if(!this.hasData_) throw "データが設定されていません";
+        
+        const symbolId = this.dicCodeToId_[code];
+        if(symbolId == undefined) return null;
+        else return symbolId;
     }
 }
