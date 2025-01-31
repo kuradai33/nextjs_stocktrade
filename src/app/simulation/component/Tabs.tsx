@@ -1,7 +1,7 @@
 import { SetStateAction, useLayoutEffect } from "react";
 
-import { signals, SignalType } from "../../lib/defines";
-import { ipAddress } from "../../lib/defines";
+import { signals, SignalType } from "@/app/lib/defines";
+import { ipAddress } from "@/app/lib/defines";
 
 export default function Page(props: {
     activeTab: SignalType;
