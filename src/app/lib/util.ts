@@ -122,7 +122,7 @@ export function convertDateStrToString(data: any): any {
     // DateStrはtypeofでobjectと判定されるからその前に置く
     // 元に戻せるように文字列に印を付ける
     if(data instanceof DateStr){
-        return `${data.getDateStr()}-**DateStr**`;
+        return `${data.dateStr_}-**DateStr**`;
     }
     else if(data == null) return data;
     else if(Array.isArray(data)){
