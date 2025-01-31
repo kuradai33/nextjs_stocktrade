@@ -1,7 +1,6 @@
 import { SetStateAction, useLayoutEffect } from "react";
 
 import { signals, SignalType } from "../../lib/defines";
-import { setHelpText } from "@/app/lib/db";
 import { ipAddress } from "../../lib/defines";
 
 export default function Page(props: {
