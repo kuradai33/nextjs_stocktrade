@@ -35,6 +35,13 @@ model Stockprices {
   @@unique([stock_id, date])
 }
 
+model DatesStockDevide {
+  id           Int    @id @default(autoincrement())
+  stock_id     Int
+  applied_date String
+  rate         Float
+}
+
 model Form {
   id      Int      @id @default(autoincrement())
   date    DateTime @default(now())
