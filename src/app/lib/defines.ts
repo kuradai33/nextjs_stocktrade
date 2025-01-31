@@ -14,7 +14,7 @@ export type Dictionary<TKey extends string | number | symbol, TValue> = {
 
 // yyyy-mm-ddの日付を保持する
 export class DateStr {
-    private dateStr_: string;
+    readonly dateStr_: string;
 
     // コンストラクタの複数定義
     constructor();
@@ -49,21 +49,17 @@ export class DateStr {
         this.dateStr_ = dateStr;
     }
 
-    public getDateStr(): string {
-        return this.dateStr_;
-    }
-
     // DateStrの大小等号を判定する
     // 並び替えないなら0以下、並び替えるなら0より大きい(sortに準拠)
     public static compareDateStr(date1: DateStr, date2: DateStr): number{
-        if(date1.getDateStr() == date2.getDateStr()) return 0;
-        if(date1.getDateStr() >  date2.getDateStr()) return 1;
+        if(date1.dateStr_ == date2.dateStr_) return 0;
+        if(date1.dateStr_ >  date2.dateStr_) return 1;
         return -1;
     }
 
     // "date1 == date2"であるかを判定する
     public static equalDateStr(date1: DateStr, date2: DateStr): boolean{
-        return date1.getDateStr() == date2.getDateStr();
+        return date1.dateStr_ == date2.dateStr_;
     }
 }
 
@@ -183,11 +179,11 @@ export class SimulationResult {
 
 // 株価の四値と生産高として適切な値を保持する
 export class StockPrice{
-    open_: number;
-    high_: number;
-    low_: number;
-    close_: number;
-    volume_: number;
+    readonly open_: number;
+    readonly high_: number;
+    readonly low_: number;
+    readonly close_: number;
+    readonly volume_: number;
 
     constructor(open: number, high: number, low: number, close: number, volume: number){
         // いずれかの値が負である
@@ -238,37 +234,29 @@ type TaggedStockPrice = {
 type JsonStockPriceChartData = {
     symbolCode_: string;
     datas_: ({date: string} & StockPriceObject)[],
-    hasHLBand_: boolean,
-    hasEMA_   : boolean,
 };
 
 export class StockPriceChartData{
-    private symbolCode_: string;
-    private datas_: {date: DateStr, stockPrice: StockPrice}[];
-    private hasHLBand_ = false;
-    private hasEMA_ = false;
+    readonly symbolCode_: string;
+    readonly datas_: {date: DateStr, stockPrice: StockPrice}[];
+
+    private datasEMA_: Dictionary<number, (number | null)[]> = {};
 
     constructor();
     constructor(symbolCode: string, datas: TaggedStockPrice);
-    constructor(symbolCode: string, datas: TaggedStockPriceObject)
+    constructor(symbolCode: string, datas: TaggedStockPriceObject);
     constructor(symbolCode: string,
-                datas: TaggedStockPrice,
-                hasHLBand: boolean,
-                hasEMA   : boolean);
+                datas: TaggedStockPrice);
     constructor(jsonData: JsonStockPriceChartData);
 
     constructor(
         symbolCodeORJsonData?: string | JsonStockPriceChartData,
         datas?: TaggedStockPrice | TaggedStockPriceObject,
-        hasHLBand?: boolean,
-        hasEMA?   : boolean,
     ){
         if(symbolCodeORJsonData && typeof symbolCodeORJsonData == "object"){
             const jsonData = symbolCodeORJsonData;
             this.symbolCode_ = jsonData.symbolCode_;
             this.datas_ = this.convertStockPriceObjectToClass(jsonData.datas_);
-            this.hasHLBand_ = jsonData.hasHLBand_;
-            this.hasEMA_ = jsonData.hasEMA_;
             return;
         }
 
@@ -285,15 +273,13 @@ export class StockPriceChartData{
         else this.datas_ = [];
         // Check: ソート順が合っているか
         this.datas_.sort((a, b) => DateStr.compareDateStr(a.date, b.date))
-
-        this.hasHLBand_ = hasHLBand ? hasHLBand : this.hasHLBand_;
-        this.hasEMA_ = hasEMA ? hasEMA : this.hasEMA_;
     }
 
     // ろうそく足チャート表示用のデータを返す
     // TODO: EMAの計算処理とその引数指定
     public createStockPriceChartData
-        (startDate: DateStr, endDate: DateStr): {
+        (startDate: DateStr, endDate: DateStr, extraDate: number,
+         spanEMA?: number, spanEMALong?: number): {
             chartData: {
                 open: number;
                 high: number;
@@ -301,18 +287,40 @@ export class StockPriceChartData{
                 close: number;
             }[];
             chartDate: string[];
-            chartEMAShort: number[];
-            chartEMALong: number[];
+            chartEMAShort: (number | null)[];
+            chartEMALong: (number | null)[];
         }
     {
-        const firstDataIndex =
+        // 期間内のデータの範囲を表すインデックスを取得
+        const mainDataFirstIndex =
             this.dateToIndexBinaryFind(
                 (x: DateStr) => DateStr.compareDateStr(x, startDate) >= 0
             );
-        const lastDataIndex =
+        const mainDataLastIndex  =
             this.dateToIndexBinaryFind(
                 (x: DateStr) => DateStr.compareDateStr(x, endDate) > 0
             ) - 1;
+
+        // 期間を広げたインデックスを取得
+        // firstはfor文の初期値のため少なくとも0以上
+        // lastはfor文の条件式ではじかれるため上限を決めなくてよい
+        const dataFirstIndex = Math.max(0, mainDataFirstIndex - extraDate);
+        const dataLastIndex  = mainDataLastIndex + extraDate;
+
+        let indicatorEMA: (number | null)[] = [];
+        let indicatorEMALong: (number | null)[] = [];
+        if(spanEMA){
+            indicatorEMA =
+                `${spanEMA}` in this.datasEMA_ ?
+                this.datasEMA_[spanEMA] :
+                this.addComputedEMAIndicator(spanEMA);
+        }
+        if(spanEMA && spanEMALong){
+            indicatorEMALong =
+                `${spanEMALong}` in this.datasEMA_ ?
+                this.datasEMA_[spanEMALong] :
+                this.addComputedEMAIndicator(spanEMALong);
+        }
         
         let chartDate: string[] = [];
         let chartData: {
@@ -321,23 +329,28 @@ export class StockPriceChartData{
             high: number;
             low: number;
         }[] = [];
-        for(let di = firstDataIndex; di <= lastDataIndex && di < this.datas_.length; di++){
-            chartDate.push(this.datas_[di].date.getDateStr());
+        let chartDataEMA: (number | null)[] = [];
+        let chartDataEMALong: (number | null)[] = [];
+        for(let i = dataFirstIndex; i <= dataLastIndex && i < this.datas_.length; i++){
+            chartDate.push(this.datas_[i].date.dateStr_);
 
-            const {open, high, low, close} = this.datas_[di].stockPrice.getOHLCVData();
+            const {open, high, low, close} = this.datas_[i].stockPrice.getOHLCVData();
             chartData.push({
                 open:  open,
                 high:  high,
                 low:   low,
                 close: close,
-            })
+            });
+
+            if(spanEMA) chartDataEMA.push(indicatorEMA[i]);
+            if(spanEMA && spanEMALong) chartDataEMALong.push(indicatorEMALong[i]);
         }
 
         return {
             chartDate: chartDate,
             chartData: chartData,
-            chartEMAShort: [],
-            chartEMALong : [],
+            chartEMAShort: chartDataEMA,
+            chartEMALong : chartDataEMALong,
         };
     }
 
@@ -376,27 +389,51 @@ export class StockPriceChartData{
     }
 
     // Jsonに変換できる型に変換したものを返す
-    public convertJsonFormat(): 
-        {
+    public convertJsonFormat(): {
             symbolCode_: string;
             datas_: (StockPriceObject & {date:string})[],
-            hasHLBand_: boolean,
-            hasEMA_   : boolean,
         }
     {
         return {
             symbolCode_: this.symbolCode_,
             // 復元しやすいように日付とその他をまとめる
             datas_: this.datas_.map((val, _) => ({
-                date: val.date.getDateStr(),
+                date: val.date.dateStr_,
                 open:  val.stockPrice.open_,
                 high:  val.stockPrice.high_,
                 low :  val.stockPrice.low_,
                 close: val.stockPrice.close_,
                 volume: val.stockPrice.volume_,
             })),
-            hasHLBand_: this.hasHLBand_,
-            hasEMA_:    this.hasEMA_,
         }
+    }
+
+    // EMAを計算してindicatorEMAに追加
+    private addComputedEMAIndicator(spanEMA: number): (number | null)[]{
+        const weightEMA = 2 / (spanEMA + 1);
+
+        let valueEMA = 0;
+        let indicatorEMA: (number | null)[] = [];
+        for(let i = 0; i < this.datas_.length; i++){
+            const close = this.datas_[i].stockPrice.close_;
+            // spanEMA日目までは未定義
+            if(i < spanEMA - 1){
+                valueEMA += close;
+                indicatorEMA.push(null);
+                continue;
+            }
+
+            // spanEMA日目はそれまでの相加平均
+            if(i == spanEMA - 1){
+                valueEMA += close;
+                valueEMA /= spanEMA;
+            }
+            // spanEMA日目より後は重み付き和
+            else valueEMA = close * weightEMA + valueEMA * (1 - weightEMA);
+            indicatorEMA.push(valueEMA);
+        }
+
+        this.datasEMA_[spanEMA] = indicatorEMA;
+        return indicatorEMA;
     }
 };
