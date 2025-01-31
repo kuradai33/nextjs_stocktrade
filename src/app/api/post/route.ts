@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { DateStr, StockPriceChartData } from "@/app/lib/defines";
+import { DateStr, StockPriceData } from "@/app/lib/defines";
 import { convertDateStrToString } from "@/app/lib/util";
 import { simulateSmashday, simulateSwingplay } from "@/app/lib/db";
 
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
                 amount: string;
             }[];
         };
-        data: StockPriceChartData;
+        data: StockPriceData;
     } = {
         result: {
             sumAll: 0,
@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
             sumLoss: 0,
             cntGain: 0,
             cntLoss: 0,
-            details: [{ startDate: new DateStr(), endDate: new DateStr(), tradeType: "", outcome: "", amount: "" }],
+            details: [],
         },
-        data: new StockPriceChartData(),
+        data: new StockPriceData(),
     };
 
     if (body.mode == "smashday")
@@ -60,15 +60,16 @@ export async function POST(request: NextRequest) {
     const { result, data } = resultAll;
 
     return new Response(
-        JSON.stringify(convertDateStrToString(
-        {
-            total: result.sumAll,
-            totalGain: result.sumGain,
-            totalLoss: result.sumLoss,
-            cntGain: result.cntGain,
-            cntLoss: result.cntLoss,
-            details: result.details,
-            data: data.convertJsonFormat(),
-        }))
+        JSON.stringify(
+            convertDateStrToString({
+                total: result.sumAll,
+                totalGain: result.sumGain,
+                totalLoss: result.sumLoss,
+                cntGain: result.cntGain,
+                cntLoss: result.cntLoss,
+                details: result.details,
+                data: data.convertJsonFormat(),
+            })
+        )
     );
 }
