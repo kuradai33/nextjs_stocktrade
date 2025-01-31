@@ -13,25 +13,25 @@ export type Dictionary<TKey extends string | number | symbol, TValue> = {
 };
 
 // yyyy-mm-ddの日付を保持する
-export class DateStr {
+export class DateStr{
     readonly dateStr_: string;
 
     // コンストラクタの複数定義
     constructor();
     constructor(dateStr: string);
 
-    constructor(dateStr?: string) {
+    constructor(dateStr?: string){
         if(!dateStr){
             this.dateStr_ = "0000-00-00";
             return;
         }
 
         // 「○○○○-○○-○○」の文字数は10
-        if (dateStr.length != 10) {
+        if(dateStr.length != 10){
             throw "Invalid Value: 文字数が適切ではありません";
         }
         // 日付として「-」が適切な位置にある
-        if (dateStr[4] != "-" || dateStr[7] != "-") {
+        if(dateStr[4] != "-" || dateStr[7] != "-"){
             throw "Invalid Value: ハイフンが適切な位置にありません";
         }
 
@@ -41,7 +41,7 @@ export class DateStr {
         const dayStr = dateStr.slice(8, 10);
         // 上3つは全て数字で構成される必要がある
         const dateStrNumber = yearStr + monthStr + dayStr;
-        if (!util.checkComposedUsableChar(dateStrNumber, "1234567890")) {
+        if(!util.checkComposedUsableChar(dateStrNumber, "1234567890")){
             throw "Invalid Value: 数字でない文字が不適切な位置で使用されています";
         }
 
@@ -97,8 +97,7 @@ export class SimulationResult {
         totalLoss: number,
         cntGain: number,
         cntLoss: number,
-        detailsByDate: 
-        {
+        detailsByDate: {
             startDate: DateStr;
             endDate:   DateStr;
             tradeType: "Buy" | "Sell" | "";
@@ -114,7 +113,7 @@ export class SimulationResult {
         cntGain?: number,
         cntLoss?: number,
         detailsByDate?: any[]
-    ) {
+    ){
         this.totalProfit_ = totalProfit ? totalProfit : -1;
         this.totalGain_ = totalGain ? totalGain : -1;
         this.totalLoss_ = totalLoss ? totalLoss : -1;
@@ -130,28 +129,28 @@ export class SimulationResult {
                 this.detailsByDate_ = detailsByDate;
             }
             else if(typeof startDate == "object"){
-                this.detailsByDate_ = detailsByDate.map(
-                    (value, _) => {
-                        try{
-                            value.startDate = new DateStr(value.startDate.dateStr);
-                            value.endDate = new DateStr(value.endDate.dateStr);
-                        }
-                        catch(e){
-                            console.log(`Error: ${e}`);
-                        }
-                        return value});
+                this.detailsByDate_ = detailsByDate.map((value, _) => {
+                    try {
+                        value.startDate = new DateStr(value.startDate.dateStr);
+                        value.endDate = new DateStr(value.endDate.dateStr);
+                    }
+                    catch(e){
+                        console.log(`Error: ${e}`);
+                    }
+                    return value;
+                });
             }
             else if(typeof startDate == "string"){
-                this.detailsByDate_ = detailsByDate.map(
-                    (value, _) => {
-                        try{
-                            value.startDate = new DateStr(value.startDate);
-                            value.endDate = new DateStr(value.endDate);
-                        }
-                        catch(e){
-                            console.log(`Error: ${e}`);
-                        }
-                        return value});
+                this.detailsByDate_ = detailsByDate.map((value, _) => {
+                    try{
+                        value.startDate = new DateStr(value.startDate);
+                        value.endDate = new DateStr(value.endDate);
+                    }
+                    catch (e){
+                        console.log(`Error: ${e}`);
+                    }
+                    return value;
+                });
             }
             else throw "detailsByDateの型が適切ではありません";
         }
@@ -195,9 +194,9 @@ export class StockPrice{
             throw "Invalid Value: 値が不正な大小関係をとっている";
         }
 
-        this.open_ = open;
-        this.high_ = high;
-        this.low_ = low;
+        this.open_  = open;
+        this.high_  = high;
+        this.low_   = low;
         this.close_ = close;
         this.volume_ = volume;
     }
@@ -209,44 +208,42 @@ export class StockPrice{
             low:   this.low_,
             close: this.close_,
             volume: this.volume_,
-        }
+        };
     }
 }
 
 type StockPriceObject = {
-    open:  number,
-    high:  number,
-    low:   number,
-    close: number,
+    open:  number;
+    high:  number;
+    low:   number;
+    close: number;
     volume: number
 };
 
 // 判別可能ユニオン型
 type TaggedStockPriceObject = {
-    type: "object",
-    data: ({date: string} & StockPriceObject)[],
+    type: "object";
+    data: ({date: string} & StockPriceObject)[];
 };
 type TaggedStockPrice = {
-    type: "class",
-    data: {date: DateStr, stockPrice: StockPrice}[],
+    type: "class";
+    data: { date: DateStr; stockPrice: StockPrice }[];
 };
 
 type JsonStockPriceChartData = {
     symbolCode_: string;
-    datas_: ({date: string} & StockPriceObject)[],
+    datas_: ({ date: string } & StockPriceObject)[];
 };
 
-export class StockPriceChartData{
+export class StockPriceData{
     readonly symbolCode_: string;
-    readonly datas_: {date: DateStr, stockPrice: StockPrice}[];
+    readonly datas_: { date: DateStr; stockPrice: StockPrice }[];
 
     private datasEMA_: Dictionary<number, (number | null)[]> = {};
 
     constructor();
     constructor(symbolCode: string, datas: TaggedStockPrice);
     constructor(symbolCode: string, datas: TaggedStockPriceObject);
-    constructor(symbolCode: string,
-                datas: TaggedStockPrice);
     constructor(jsonData: JsonStockPriceChartData);
 
     constructor(
@@ -271,32 +268,66 @@ export class StockPriceChartData{
             }
         }
         else this.datas_ = [];
-        // Check: ソート順が合っているか
-        this.datas_.sort((a, b) => DateStr.compareDateStr(a.date, b.date))
+        this.datas_.sort((a, b) => DateStr.compareDateStr(a.date, b.date));
     }
 
     // ろうそく足チャート表示用のデータを返す
     // TODO: EMAの計算処理とその引数指定
-    public createStockPriceChartData
-        (startDate: DateStr, endDate: DateStr, extraDate: number,
-         spanEMA?: number, spanEMALong?: number): {
-            chartData: {
-                open: number;
-                high: number;
-                low: number;
-                close: number;
-            }[];
-            chartDate: string[];
-            chartEMAShort: (number | null)[];
-            chartEMALong: (number | null)[];
+    public createStockPriceData({
+        rangeDate,
+        extraDate = 0,
+        spanEMA,
+        spanEMALong,
+    }: {
+        rangeDate?: [DateStr, DateStr];
+        extraDate?: number;
+        spanEMA?: number;
+        spanEMALong?: number;
+    }): {
+        sizeData: number;
+        chartData: {
+            open: number;
+            high: number;
+            low: number;
+            close: number;
+        }[];
+        chartDate: string[];
+        chartEMAShort: (number | null)[];
+        chartEMALong: (number | null)[];
+    } {
+        // EMAが必要なら取得する
+        let indicatorEMA: (number | null)[] = [];
+        let indicatorEMALong: (number | null)[] = [];
+        if (spanEMA) {
+            indicatorEMA =
+                `${spanEMA}` in this.datasEMA_
+                    ? this.datasEMA_[spanEMA]
+                    : this.addComputedEMAIndicator(spanEMA);
         }
-    {
+        if (spanEMA && spanEMALong) {
+            indicatorEMALong =
+                `${spanEMALong}` in this.datasEMA_
+                    ? this.datasEMA_[spanEMALong]
+                    : this.addComputedEMAIndicator(spanEMALong);
+        }
+
+        // 日付指定がなかったらデータ全体を返す
+        if (!rangeDate) {
+            return {
+                sizeData: this.datas_.length,
+                chartData: this.datas_.map((val) => val.stockPrice.getOHLCVData()),
+                chartDate: this.datas_.map((val) => val.date.dateStr_),
+                chartEMAShort: spanEMA ? this.datasEMA_[spanEMA] : [],
+                chartEMALong: spanEMALong ? this.datasEMA_[spanEMALong] : [],
+            };
+        }
+
+        const [startDate, endDate] = rangeDate;
         // 期間内のデータの範囲を表すインデックスを取得
-        const mainDataFirstIndex =
-            this.dateToIndexBinaryFind(
-                (x: DateStr) => DateStr.compareDateStr(x, startDate) >= 0
-            );
-        const mainDataLastIndex  =
+        const mainDataFirstIndex = this.dateToIndexBinaryFind(
+            (x: DateStr) => DateStr.compareDateStr(x, startDate) >= 0
+        );
+        const mainDataLastIndex =
             this.dateToIndexBinaryFind(
                 (x: DateStr) => DateStr.compareDateStr(x, endDate) > 0
             ) - 1;
@@ -307,21 +338,6 @@ export class StockPriceChartData{
         const dataFirstIndex = Math.max(0, mainDataFirstIndex - extraDate);
         const dataLastIndex  = mainDataLastIndex + extraDate;
 
-        let indicatorEMA: (number | null)[] = [];
-        let indicatorEMALong: (number | null)[] = [];
-        if(spanEMA){
-            indicatorEMA =
-                `${spanEMA}` in this.datasEMA_ ?
-                this.datasEMA_[spanEMA] :
-                this.addComputedEMAIndicator(spanEMA);
-        }
-        if(spanEMA && spanEMALong){
-            indicatorEMALong =
-                `${spanEMALong}` in this.datasEMA_ ?
-                this.datasEMA_[spanEMALong] :
-                this.addComputedEMAIndicator(spanEMALong);
-        }
-        
         let chartDate: string[] = [];
         let chartData: {
             open: number;
@@ -334,7 +350,7 @@ export class StockPriceChartData{
         for(let i = dataFirstIndex; i <= dataLastIndex && i < this.datas_.length; i++){
             chartDate.push(this.datas_[i].date.dateStr_);
 
-            const {open, high, low, close} = this.datas_[i].stockPrice.getOHLCVData();
+            const { open, high, low, close } = this.datas_[i].stockPrice.getOHLCVData();
             chartData.push({
                 open:  open,
                 high:  high,
@@ -347,6 +363,7 @@ export class StockPriceChartData{
         }
 
         return {
+            sizeData: chartData.length,
             chartDate: chartDate,
             chartData: chartData,
             chartEMAShort: chartDataEMA,
@@ -372,28 +389,20 @@ export class StockPriceChartData{
 
     // オブジェクトの配列をStockPriceの配列に変えたものを返す
     // コンストラクタでデータベースからの直接データを渡すときに使用する
-    private convertStockPriceObjectToClass
-        (datas: ({date: string} & StockPriceObject)[]):
-        {date: DateStr, stockPrice: StockPrice}[]
-    {
+    private convertStockPriceObjectToClass(
+        datas: ({ date: string } & StockPriceObject)[]
+    ): { date: DateStr; stockPrice: StockPrice }[] {
         return datas.map((val, _) => ({
             date: new DateStr(val.date),
-            stockPrice: new StockPrice(
-                val.open,
-                val.high,
-                val.low,
-                val.close,
-                val.volume,
-            )
-        }))
+            stockPrice: new StockPrice(val.open, val.high, val.low, val.close, val.volume),
+        }));
     }
 
     // Jsonに変換できる型に変換したものを返す
-    public convertJsonFormat(): {
-            symbolCode_: string;
-            datas_: (StockPriceObject & {date:string})[],
-        }
-    {
+    public convertJsonFormat():{
+        symbolCode_: string;
+        datas_: (StockPriceObject & { date: string })[];
+    }{
         return {
             symbolCode_: this.symbolCode_,
             // 復元しやすいように日付とその他をまとめる
@@ -405,7 +414,7 @@ export class StockPriceChartData{
                 close: val.stockPrice.close_,
                 volume: val.stockPrice.volume_,
             })),
-        }
+        };
     }
 
     // EMAを計算してindicatorEMAに追加
