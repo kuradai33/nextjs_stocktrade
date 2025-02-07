@@ -12,8 +12,6 @@ export default function Page() {
     // 現在選ばれているタブ
     const [activeTab, setActiveTab] = useState<SignalType>("swingplay");
 
-    const [helpMessage, setHelpMessage] = useState("");
-
     // 入力
     const [settings, setSettings] = useState<Settings>({ type: "none" });
 
@@ -44,15 +42,12 @@ export default function Page() {
                 <Tabs
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
-                    setHelpMessage={setHelpMessage}
                 />
 
                 {/* Setting */}
                 <Setting
                     setSettings={setSettings}
                     activeTab={activeTab}
-                    helpMessage={helpMessage}
-                    setHelpMessage={setHelpMessage}
                     resultRef={resultRef}
                     setResult={setResult}
                     setChartDatas={setChartDatas}
