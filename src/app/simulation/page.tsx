@@ -49,13 +49,8 @@ export default function Page() {
 
                 {/* Setting */}
                 <Setting
+                    setSettings={setSettings}
                     activeTab={activeTab}
-                    stockSymbol={stockSymbol}
-                    setStockSymbol={setStockSymbol}
-                    stockName={stockName}
-                    setStockName={setStockName}
-                    modeHeatmap={modeHeatmap}
-                    setModeHeatmap={setModeHeatmap}
                     helpMessage={helpMessage}
                     setHelpMessage={setHelpMessage}
                     resultRef={resultRef}
@@ -69,12 +64,10 @@ export default function Page() {
             {/* Simulation Result */}
             {resultVisible && (
                 <Result
+                    settings={settings}
                     resultRef={resultRef}
                     result={{
                         activeTab: activeTab,
-                        stockSymbol: stockSymbol,
-                        stockName: stockName,
-                        modeHeatmap: modeHeatmap,
                         resultData: result,
                         chartDatas: chartDatas,
                         resultHeatmap: resultHeatmap,
