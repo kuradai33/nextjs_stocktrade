@@ -5,7 +5,14 @@ import SettingInsideday from "@/app/simulation/component/Settings/SettingInsided
 import SettingSwingplay from "@/app/simulation/component/Settings/SettingSwingplay";
 import Help from "@/app/simulation/component/Help";
 
-import { SignalType, ipAddress, SimulationResult, StockPriceChartData } from "@/app/lib/defines";
+import {
+    SignalType,
+    Settings,
+    TradeType,
+    ipAddress,
+    SimulationResult,
+    StockPriceData,
+} from "@/app/lib/defines";
 import { convertSpecificStringToDateStr } from "@/app/lib/util";
 
 type Props = {
