@@ -5,9 +5,8 @@ import { ipAddress } from "../../lib/defines";
 
 export default function Page(props: {
     activeTab: SignalType;
-    helpMessage: string;
-    setHelpMessage: Dispatch<SetStateAction<string>>;
 }) {
+    const [helpMessage, setHelpMessage] = useState("");
     const [editHelp, setEditHelp] = useState(false);
 
     const submitSethelp = async () => {
@@ -20,7 +19,7 @@ export default function Page(props: {
                 },
                 body: JSON.stringify({
                     signal: props.activeTab,
-                    text: props.helpMessage,
+                    text: helpMessage,
                 }),
             });
         } catch (err) {
@@ -48,12 +47,12 @@ export default function Page(props: {
                         <textarea
                             className="absolute bottom-12 right-0 w-40 p-2 bg-gray-700 text-white text-sm rounded-md shadow-md"
                             id="message"
-                            value={props.helpMessage}
-                            onChange={(e) => props.setHelpMessage(e.target.value)}
+                            value={helpMessage}
+                            onChange={(e) => setHelpMessage(e.target.value)}
                         ></textarea>
                     ) : (
                         <div className="absolute bottom-12 right-0 hidden w-40 p-2 bg-gray-700 text-white text-sm rounded-md shadow-md group-hover:block">
-                            <p>{props.helpMessage}</p>
+                            <p>{helpMessage}</p>
                         </div>
                     )}
                 </div>
