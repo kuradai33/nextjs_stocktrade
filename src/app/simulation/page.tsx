@@ -14,6 +14,10 @@ export default function Page() {
 
     const [helpMessage, setHelpMessage] = useState("");
 
+    // 入力
+    const [settings, setSettings] = useState<Settings>({ type: "none" });
+
+    // 結果の出力用
     const [resultVisible, setResultVisible] = useState(true);
     const [result, setResult] = useState<SimulationResult>(new SimulationResult());
 
