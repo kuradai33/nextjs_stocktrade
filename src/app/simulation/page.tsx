@@ -10,9 +10,6 @@ import { SignalType, Settings, SimulationResult, StockPriceData } from "@/app/li
 
 export default function Page() {
     const [activeTab, setActiveTab] = useState<SignalType>("swingplay");
-    const [stockSymbol, setStockSymbol] = useState<string>("7203");
-    const [stockName, setStockName] = useState("トヨタ自動車");
-    const [modeHeatmap, setModeHeatmap] = useState(false);
 
     const [helpMessage, setHelpMessage] = useState("");
 
