@@ -54,6 +54,11 @@ export default function Page(props: Props) {
         resultRef,
     } = props;
 
+    // 全てのシグナルに共通する入力
+    const [symbolCode, setSymbolCode] = useState<string>("7203");
+    const [symbolName, setSymbolName] = useState("トヨタ自動車");
+    const [modeHeatmap, setModeHeatmap] = useState(false);
+
     // common
     const [startDate, setStartDate] = useState("2019-01-01");
     const [endDate, setEndDate] = useState("2024-01-01");
