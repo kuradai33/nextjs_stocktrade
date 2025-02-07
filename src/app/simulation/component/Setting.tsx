@@ -210,7 +210,7 @@ export default function Page(props: Props) {
             catch(e){
                 console.log(`Error: ${e}`);
             }
-            setChartDatas(new StockPriceChartData(jsonData.data));
+            setChartDatas(new StockPriceData(jsonData.data));
             setResultVisible(true);
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
         } catch (err) {
