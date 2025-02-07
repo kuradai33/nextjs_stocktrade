@@ -67,7 +67,6 @@ export default function Page() {
                     settings={settings}
                     resultRef={resultRef}
                     result={{
-                        activeTab: activeTab,
                         resultData: result,
                         chartDatas: chartDatas,
                         resultHeatmap: resultHeatmap,
