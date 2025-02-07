@@ -310,16 +310,16 @@ export default function Page(props: Props) {
                     {activeTab === "smashday" && (
                         <SettingSmashday
                             tradeType={tradeType}
-                            useHLBand={useHLBand}
-                            spanHLBand={spanHLBand}
-                            useEMA={useEMA}
-                            spanEMAShort={spanEMAShort}
-                            spanEMALong={spanEMALong}
                             setTradeType={setTradeType}
+                            useHLBand={useHLBand}
                             setUseHLBand={setUseHLBand}
+                            spanHLBand={spanHLBand}
                             setSpanHLBand={setSpanHLBand}
+                            useEMA={useEMA}
                             setUseEMA={setUseEMA}
+                            spanEMAShort={spanEMAShort}
                             setSpanEMAShort={setSpanEMAShort}
+                            spanEMALong={spanEMALong}
                             setSpanEMALong={setSpanEMALong}
                         />
                     )}
