@@ -1,4 +1,35 @@
-import { Dictionary } from "@/app/lib/defines";
+import { Dictionary, signals, SignalType } from "@/app/lib/defines";
+import { getHelpText, setHelpText } from "./db";
+
+// ヘルプメッセージのキャッシュ
+export class helpMessages{
+    private static helpMessages_: Dictionary<string, string> = {};
+    private static doneInitialize_ = false;
+
+    private static async initialize(){
+        for(const signal of signals){
+            this.helpMessages_[signal] = await getHelpText(signal);
+        }
+    }
+
+    public static getHelpmessage(signal: SignalType): string{
+        if(!this.doneInitialize_){
+            this.initialize();
+            this.doneInitialize_ = true;
+        }
+
+        return this.helpMessages_[signal];
+    }
+
+    public static setHelpmessage(signal: SignalType, message: string){
+        if(!this.doneInitialize_){
+            this.initialize();
+            this.doneInitialize_ = true;
+        }
+
+        setHelpText(signal, message);
+    }
+}
 
 // 銘柄コードや銘柄名から他方を取得するデータのキャッシュ
 export class SymbolNames{
