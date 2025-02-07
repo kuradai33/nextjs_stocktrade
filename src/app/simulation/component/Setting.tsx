@@ -25,12 +25,14 @@ type Props = {
     setModeHeatmap: Dispatch<SetStateAction<boolean>>;
     setResultVisible: Dispatch<SetStateAction<boolean>>;
     setResult: Dispatch<SetStateAction<SimulationResult>>;
-    setChartDatas: Dispatch<SetStateAction<StockPriceChartData>>;
-    setResultHeatmap: Dispatch<SetStateAction<{
-        dataHeatmap: number[][];
-        shortHeatmap: string[];
-        longHeatmap: string[];
-    }>>;
+    setChartDatas: Dispatch<SetStateAction<StockPriceData>>;
+    setResultHeatmap: Dispatch<
+        SetStateAction<{
+            dataHeatmap: number[][];
+            shortHeatmap: string[];
+            longHeatmap: string[];
+        }>
+    >;
     helpMessage: string;
     setHelpMessage: Dispatch<SetStateAction<string>>;
     resultRef: RefObject<HTMLDivElement>;
@@ -196,15 +198,14 @@ export default function Page(props: Props) {
             });
             const jsonData = await response.json();
             try{
-                const simulationResult = 
-                    new SimulationResult(
-                        jsonData.total,
-                        jsonData.totalGain,
-                        jsonData.totalLoss,
-                        jsonData.cntGain,
-                        jsonData.cntLoss,
-                        convertSpecificStringToDateStr(jsonData.details),
-                    );
+                const simulationResult = new SimulationResult(
+                    jsonData.total,
+                    jsonData.totalGain,
+                    jsonData.totalLoss,
+                    jsonData.cntGain,
+                    jsonData.cntLoss,
+                    convertSpecificStringToDateStr(jsonData.details),
+                );
                 setResult(simulationResult);
             }
             catch(e){
@@ -241,7 +242,11 @@ export default function Page(props: Props) {
                 }),
             });
             const jsonData = await response.json();
-            setResultHeatmap({dataHeatmap: jsonData.datas, shortHeatmap: jsonData.shorts, longHeatmap: jsonData.longs});
+            setResultHeatmap({
+                dataHeatmap: jsonData.datas,
+                shortHeatmap: jsonData.shorts,
+                longHeatmap: jsonData.longs,
+            });
             setResultVisible(true);
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
         } catch (err) {
