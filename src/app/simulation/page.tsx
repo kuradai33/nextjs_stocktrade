@@ -17,28 +17,15 @@ export default function Page() {
     const [helpMessage, setHelpMessage] = useState("");
 
     const [resultVisible, setResultVisible] = useState(true);
-    const [result, setResult] = useState<{
-        totalProfit: string;
-        totalGain: string;
-        totalLoss: string;
-        cntGain: string;
-        cntLoss: string;
-        details: { startDate: string; endDate: string; outcome: "Gain" | "Loss"; amount: string }[];
-    }>({ totalProfit: "", totalGain: "", totalLoss: "", cntGain: "", cntLoss: "", details: [] });
+    const [result, setResult] = useState<SimulationResult>(new SimulationResult());
 
-    const [chartDatas, setChartDatas] = useState<{
-        date: string;
-        open: number;
-        close: number;
-        high: number;
-        low: number;
-        hband?: number;
-        lband?: number;
-        emashort?: number;
-        emalong?: number;
-    }[]>([]);
+    const [chartDatas, setChartDatas] = useState<StockPriceData>(new StockPriceData());
 
-    const [resultHeatmap, setResultHeatmap] = useState<{dataHeatmap: number[][], shortHeatmap: string[], longHeatmap: string[]}>({dataHeatmap: [], shortHeatmap: [], longHeatmap: []});
+    const [resultHeatmap, setResultHeatmap] = useState<{
+        dataHeatmap: number[][];
+        shortHeatmap: string[];
+        longHeatmap: string[];
+    }>({ dataHeatmap: [], shortHeatmap: [], longHeatmap: [] });
 
     const resultRef = useRef<HTMLDivElement>(null);
 
