@@ -16,13 +16,8 @@ import {
 import { convertSpecificStringToDateStr } from "@/app/lib/util";
 
 type Props = {
+    setSettings: Dispatch<SetStateAction<Settings>>;
     activeTab: SignalType;
-    stockSymbol: string;
-    setStockSymbol: Dispatch<SetStateAction<string>>;
-    stockName: string;
-    setStockName: Dispatch<SetStateAction<string>>;
-    modeHeatmap: boolean;
-    setModeHeatmap: Dispatch<SetStateAction<boolean>>;
     setResultVisible: Dispatch<SetStateAction<boolean>>;
     setResult: Dispatch<SetStateAction<SimulationResult>>;
     setChartDatas: Dispatch<SetStateAction<StockPriceData>>;
@@ -40,13 +35,8 @@ type Props = {
 
 export default function Page(props: Props) {
     const {
+        setSettings,
         activeTab,
-        stockSymbol,
-        setStockSymbol,
-        stockName,
-        setStockName,
-        modeHeatmap,
-        setModeHeatmap,
         helpMessage,
         setHelpMessage,
         setResultVisible,
