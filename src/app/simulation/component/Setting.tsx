@@ -1,9 +1,9 @@
 import { ChangeEvent, Dispatch, FormEvent, RefObject, SetStateAction, useState } from "react";
 
-import SettingSmashday from "./Settings/SettingSmashday";
-import SettingInsideday from "./Settings/SettingInsideday";
-import SettingSwingplay from "./Settings/SettingSwingplay";
-import Help from "./Help";
+import SettingSmashday from "@/app/simulation/component/Settings/SettingSmashday";
+import SettingInsideday from "@/app/simulation/component/Settings/SettingInsideday";
+import SettingSwingplay from "@/app/simulation/component/Settings/SettingSwingplay";
+import Help from "@/app/simulation/component/Help";
 
 import { SignalType, ipAddress, SimulationResult, StockPriceChartData } from "@/app/lib/defines";
 import { convertSpecificStringToDateStr } from "@/app/lib/util";
