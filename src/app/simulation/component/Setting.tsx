@@ -103,6 +103,76 @@ export default function Page(props: Props) {
 
     const submitSimulation = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        const stringToTradeType = function (s: string): TradeType {
+            if (s == "both") return "both";
+            else if (s == "buy") return "buy";
+            else if (s == "sell") return "sell";
+            else return "";
+        };
+
+        if (activeTab == "smashday") {
+            setSettings({
+                type: "smashday",
+                setting: {
+                    symbolCode: symbolCode,
+                    symbolName: symbolName,
+                    startDate: startDate,
+                    endDate: endDate,
+                    tradeType: stringToTradeType(tradeType),
+                    hlBand: { use: useHLBand, period: spanHLBand },
+                    ema: {
+                        use: useEMA,
+                        periodShort: spanEMAShort,
+                        periodLong: spanEMALong,
+                    },
+                },
+            });
+        } else if (activeTab == "insideday") {
+            setSettings({
+                type: "insideday",
+                setting: {
+                    symbolCode: symbolCode,
+                    symbolName: symbolName,
+                    startDate: startDate,
+                    endDate: endDate,
+                },
+            });
+        } else if (activeTab == "swingplay") {
+            setSettings({
+                type: "swingplay",
+                setting: {
+                    symbolCode: symbolCode,
+                    symbolName: symbolName,
+                    startDate: startDate,
+                    endDate: endDate,
+                    tradeType: stringToTradeType(tradeType),
+                    mode: modeHeatmap
+                        ? {
+                              type: "Heatmap",
+                              setting: {
+                                  firstPeriodEMAShort: spanEMAShortStartSwingplay,
+                                  lastPeriodEMAShort: spanEMAShortEndSwingplay,
+                                  firstPeriodEMALong: spanEMALongStartSwingplay,
+                                  lastPeriodEMALong: spanEMALongEndSwingplay,
+                              },
+                          }
+                        : {
+                              type: "Normal",
+                              setting: {
+                                  periodEMAShort: spanEMAShortSwingplay,
+                                  periodEMALong: spanEMALongSwingplay,
+                              },
+                          },
+                    ema: {
+                        use: useEMA,
+                        periodShort: spanEMAShort,
+                        periodLong: spanEMALong,
+                    },
+                },
+            });
+        }
+
         try {
             const response = await fetch("http://" + ipAddress + "/api/post", {
                 method: "POST",
