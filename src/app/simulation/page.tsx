@@ -9,6 +9,7 @@ import Result from "@/app/simulation/component/Result";
 import { SignalType, Settings, SimulationResult, StockPriceData } from "@/app/lib/defines";
 
 export default function Page() {
+    // 現在選ばれているタブ
     const [activeTab, setActiveTab] = useState<SignalType>("swingplay");
 
     const [helpMessage, setHelpMessage] = useState("");
