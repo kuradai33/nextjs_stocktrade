@@ -28,8 +28,6 @@ type Props = {
             longHeatmap: string[];
         }>
     >;
-    helpMessage: string;
-    setHelpMessage: Dispatch<SetStateAction<string>>;
     resultRef: RefObject<HTMLDivElement>;
 };
 
@@ -37,8 +35,6 @@ export default function Page(props: Props) {
     const {
         setSettings,
         activeTab,
-        helpMessage,
-        setHelpMessage,
         setResultVisible,
         setResult,
         setChartDatas,
@@ -252,8 +248,6 @@ export default function Page(props: Props) {
                         {/* Help */}
                         <Help
                             activeTab={activeTab}
-                            helpMessage={helpMessage}
-                            setHelpMessage={setHelpMessage}
                         />
 
                         {/* Option */}
