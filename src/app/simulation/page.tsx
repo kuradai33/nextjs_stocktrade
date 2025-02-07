@@ -2,11 +2,11 @@
 
 import { useState, useRef } from "react";
 
-import Form from "./component/Form";
-import Tabs from "./component/Tabs";
-import Setting from "./component/Setting";
-import Result from "./component/Results/Result";
-import { SignalType } from "../lib/defines";
+import Form from "@/app/simulation/component/Form";
+import Tabs from "@/app/simulation/component/Tabs";
+import Setting from "@/app/simulation/component/Setting";
+import Result from "@/app/simulation/component/Result";
+import { SignalType, Settings, SimulationResult, StockPriceData } from "@/app/lib/defines";
 
 export default function Page() {
     const [activeTab, setActiveTab] = useState<SignalType>("swingplay");
