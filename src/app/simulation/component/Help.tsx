@@ -1,11 +1,9 @@
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 
-import { SignalType } from "../../lib/defines";
-import { ipAddress } from "../../lib/defines";
+import { SignalType, ipAddress } from "@/app/lib/defines";
 
-export default function Page(props: {
-    activeTab: SignalType;
-}) {
+export default function Page(props: {activeTab: SignalType;})
+{
     const [helpMessage, setHelpMessage] = useState("");
     const [editHelp, setEditHelp] = useState(false);
 
