@@ -83,7 +83,7 @@ export default function Page(props: Props) {
     const submitSymbolName = async (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         try {
-            setStockSymbol(e.target.value);
+            setSymbolCode(e.target.value);
             const response = await fetch("http://" + ipAddress + "/api/symbolname", {
                 method: "POST",
                 headers: {
@@ -95,7 +95,7 @@ export default function Page(props: Props) {
                 }),
             });
             const stockName = (await response.json()).stockName;
-            setStockName(stockName);
+            setSymbolName(stockName);
         } catch (err) {
             alert("メッセージの送信が失敗しました");
         }
@@ -182,7 +182,7 @@ export default function Page(props: Props) {
                 },
                 body: JSON.stringify({
                     mode: activeTab,
-                    symbol: stockSymbol,
+                    symbol: symbolCode,
                     start: startDate,
                     end: endDate,
                     tradeType: tradeType,
@@ -229,7 +229,7 @@ export default function Page(props: Props) {
                 },
                 body: JSON.stringify({
                     mode: activeTab,
-                    symbol: stockSymbol,
+                    symbol: symbolCode,
                     start: startDate,
                     end: endDate,
                     tradeType: tradeType,
@@ -269,7 +269,7 @@ export default function Page(props: Props) {
                             <input
                                 type="text"
                                 id="stockSymbol"
-                                value={stockSymbol}
+                                value={symbolCode}
                                 onChange={submitSymbolName}
                                 className="w-1/2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 placeholder="銘柄シンボルを入力"
@@ -279,7 +279,7 @@ export default function Page(props: Props) {
                                 htmlFor="stockSymbol"
                                 className="w-1/2 px-4 py-2 block text-gray-700 font-medium"
                             >
-                                - {stockName}
+                                - {symbolName}
                             </label>
                         </div>
                     </div>
