@@ -6,11 +6,66 @@ import * as util from "@/app/lib/util";
 export const signals = ["smashday", "insideday", "swingplay"] as const;
 export type SignalType = (typeof signals)[number];
 
+export type TradeType = "buy" | "sell" | "both" | "";
+
 export const ipAddress = false ? "192.168.0.110:3000" : "localhost:3000";
 
+// 辞書型
 export type Dictionary<TKey extends string | number | symbol, TValue> = {
     [key in TKey]: TValue;
 };
+
+// 入力の型
+export type Settings =
+    { type: "none" } |
+    { type: "smashday";  setting: SettingSmashday } |
+    { type: "insideday"; setting: SettingInsideday } |
+    { type: "swingplay"; setting: SettingSwingplay }
+
+// 各シグナルでの入力の型
+type SettingSmashday = {
+    symbolCode: string;
+    symbolName: string;
+    startDate: string;
+    endDate:   string;
+    tradeType: TradeType;
+    hlBand: SettingHLBand;
+    ema:    SettingEMA;
+}
+
+type SettingInsideday = {
+    symbolCode: string;
+    symbolName: string;
+    startDate: string;
+    endDate:   string;
+}
+
+type SettingSwingplay = {
+    symbolCode: string;
+    symbolName: string;
+    startDate: string;
+    endDate:   string;
+    tradeType: TradeType;
+    mode: { type: "Normal";  setting: SettingSwingplayNormal} |
+          { type: "Heatmap"; setting: SettingSwingplayHeatmap}
+    ema: SettingEMA;
+};
+
+type SettingSwingplayNormal = {
+    periodEMAShort: number;
+    periodEMALong:  number;
+};
+type SettingSwingplayHeatmap = {
+    firstPeriodEMAShort: number;
+    lastPeriodEMAShort:  number;
+    firstPeriodEMALong: number;
+    lastPeriodEMALong:  number;
+}
+
+type SettingHLBand = { use: false } | { use: true; period: number };
+type SettingEMA =
+    { use: false } |
+    { use: true; periodShort: number; periodLong: number };
 
 // yyyy-mm-ddの日付を保持する
 export class DateStr{
