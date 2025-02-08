@@ -41,3 +41,4 @@ certificates
 /prisma/dev.db
 /src/datas
 /src/libpy/__pycache__
+readme.txt
