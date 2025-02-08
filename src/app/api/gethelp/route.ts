@@ -1,10 +1,12 @@
 import { NextRequest } from "next/server";
-import { getHelpText } from "@/app/lib/db";
+
+import { HelpMessages } from "@/app/lib/data";
 
 export async function POST(request: NextRequest) {
     const body = await request.json();
 
-    const result = await getHelpText(body.signal);
+    // キャッシュからヘルプメッセージを取得
+    const result = await HelpMessages.getHelpmessage(body.signal);
 
     return new Response(JSON.stringify({ text: result }));
 }
