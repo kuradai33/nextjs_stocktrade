@@ -246,7 +246,9 @@ export default function Page(props: Props) {
                 <form onSubmit={modeHeatmap ? submitSimulationHeatmap : submitSimulation}>
                     <div className="mb-4 relative">
                         {/* Help */}
-                        <Help activeTab={activeTab}/>
+                        { activeTab == "smashday" && <Help activeTab={activeTab}/>}
+                        { activeTab == "insideday" && <Help activeTab={activeTab}/>}
+                        { activeTab == "swingplay" && <Help activeTab={activeTab}/>}
 
                         {/* Option */}
                         <label htmlFor="stockSymbol" className="block text-gray-700 font-medium">
