@@ -2,7 +2,7 @@ import { Dictionary, signals, SignalType } from "@/app/lib/defines";
 import { getHelpText, setHelpText } from "./db";
 
 // ヘルプメッセージのキャッシュ
-export class helpMessages{
+export class HelpMessages{
     private static helpMessages_: Dictionary<string, string> = {};
     private static doneInitialize_ = false;
 
@@ -12,16 +12,16 @@ export class helpMessages{
         }
     }
 
-    public static getHelpmessage(signal: SignalType): string{
+    public static async getHelpmessage(signal: SignalType){
         if(!this.doneInitialize_){
-            this.initialize();
+            await this.initialize();
             this.doneInitialize_ = true;
         }
 
         return this.helpMessages_[signal];
     }
 
-    public static setHelpmessage(signal: SignalType, message: string){
+    public static setHelpmessage(signal: SignalType, message: string): void{
         if(!this.doneInitialize_){
             this.initialize();
             this.doneInitialize_ = true;
