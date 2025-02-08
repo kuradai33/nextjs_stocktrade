@@ -17,8 +17,8 @@ async def main() -> None:
                 header = False
                 continue
 
-            # 効力開始日と比率をデータベースの形式に加工
-            processed_date = datetime.datetime.strptime(line[5], "%Y/%m/%d").strftime("%Y-%m-%d")
+            # 権利落日と比率をデータベースの形式に加工
+            processed_date = datetime.datetime.strptime(line[1], "%Y/%m/%d").strftime("%Y-%m-%d")
             rate = float(line[4].split(":")[1])
             # print(processed_date, line[2], rate)
 
