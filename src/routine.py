@@ -8,8 +8,9 @@ from libpy import mylib
 
 # 株価データベースを更新する
 
+prisma = Prisma()
+
 async def updateDetaBase():
-    prisma = Prisma()
     await prisma.connect()
 
     todayDatetime = dt.datetime.now()
@@ -24,13 +25,6 @@ async def updateDetaBase():
         code = data.code
         await mylib.updateDB(code, "2024-01-01", (today + dt.timedelta(days=1)).strftime(mylib.getDateformat()))
         time.sleep(5) # 待機
-        
-asyncio.run(updateDetaBase())
-
-# if False: # Debug
-#     schedule.every().day.at("18:27").do(updateDetaBase)
-# else:
-#     schedule.every().day.at("18:00").do(updateDetaBase)
 
 async def updateLatestDB():
     # prismaに接続
@@ -54,3 +48,10 @@ async def updateLatestDB():
         await prisma.disconnect()
         break
         time.sleep(5) # 待機
+
+asyncio.run(updateLatestDB())
+
+# if False: # Debug
+#     schedule.every().day.at("18:27").do(updateDetaBase)
+# else:
+#     schedule.every().day.at("18:00").do(updateDetaBase)
