@@ -4,7 +4,8 @@ import csv
 import asyncio
 from prisma import Prisma
 
-# 最新データを取得してデータベースに銘柄名と銘柄コードを新たに追加する
+# 最新の銘柄データを取得してデータベースに銘柄名と銘柄コードを新たに追加する
+# なくなった銘柄でもデータベースには残す
 
 # excelデータとしてデータを取得
 url = "https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls"
@@ -33,9 +34,10 @@ async def main() -> None:
     with open('./src/datas/rawCSV/' + filename) as f:
         data = csv.reader(f)
         for line in data:
-            if header:
+            if header: # ヘッダー部分をスキップ
                 header = False
                 continue
+            
             try:
                 user = await prisma.stocks.create(
                     data={
@@ -45,7 +47,6 @@ async def main() -> None:
                 )
             except:
                 pass
-            
 
     await prisma.disconnect()
 
